@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='pascal_voc_tools',
-    version='0.0.2',
+    version='0.0.3',
     author='ternence wang',
     author_email='ternencewang2015@outlook.com',
     description='some tools about pascal voc format dataset',
