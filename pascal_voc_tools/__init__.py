@@ -1,5 +1,5 @@
-from xmlreader import XmlReader
-from xmlwriter import xmlWriter
+from .xmlreader import XmlReader
+from .xmlwriter import XmlWriter
 
 name = 'pascal_voc_tools'
 
