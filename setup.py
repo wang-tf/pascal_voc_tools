@@ -5,11 +5,12 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='pascal_voc_tools',
-    version='0.0.1',
+    version='0.0.2',
     author='ternence wang',
     author_email='ternencewang2015@outlook.com',
     description='some tools about pascal voc format dataset',
     long_description=long_description,
+    long_description_content_type="text/markdown",
     url='https://github.com/wang-tf/pascal_voc_tools',
     packages=setuptools.find_packages(),
     classifiers=[
