@@ -7,7 +7,7 @@ from jinja2 import Environment, PackageLoader
 
 class Writer():
     def __init__(self, path, width, height, depth=3, database='Unknown', segmented=0):
-        environment = Environment(loader=PackageLoader('pascal_voc_writer', 'templates'), keep_trailing_newline=True)
+        environment = Environment(loader=PackageLoader('pascal_voc_tools', 'templates'), keep_trailing_newline=True)
         self.annotation_template = environment.get_template('annotation.xml')
 
         abspath = os.path.abspath(path)
