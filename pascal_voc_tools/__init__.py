@@ -4,5 +4,5 @@ from .resize import DatasetResize
 from .datasplit import DataSplit
 
 name = 'pascal_voc_tools'
-__version__ = '0.0.9'
+__version__ = '0.1.2'
 
