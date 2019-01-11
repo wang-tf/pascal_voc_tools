@@ -16,7 +16,7 @@ import cv2
 import shutil
 import tqdm
 
-from xmlreader import XmlReader
+from .xmlreader import XmlReader
 
 
 class DatasetResize():
@@ -34,7 +34,6 @@ class DatasetResize():
 
         assert os.path.exists(self.annotations_dir), self.annotations_dir
         assert os.path.exists(self.images_dir), self.images_dir
-        assert os.path.exists(self.save_root_dir), self.save_root_dir
 
         self.save_annotations_dir = os.path.join(self.save_root_dir, 'Annotations')
         self.save_images_dir = os.path.join(self.save_root_dir, 'JPEGImages')
