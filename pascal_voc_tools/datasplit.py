@@ -22,6 +22,9 @@ class DataSplit():
         assert os.path.exists(self.xmls_dir), self.xmls_dir
         assert os.path.exists(self.images_dir), self.images_dir
 
+        if not os.path.exists(self.txt_dir):
+            os.makedirs(self.txt_dir)
+
         self.match_xml_and_jpg()
 
     def match_xml_and_jpg(self, xmls_dir=None, images_dir=None):

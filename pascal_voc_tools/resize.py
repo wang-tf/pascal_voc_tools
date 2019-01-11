@@ -93,6 +93,7 @@ class DatasetResize():
         """
         annotations_file_list = self.get_annotations()
         
+        print('Resizing dataset ...')
         for xml_path in tqdm.tqdm(annotations_file_list):
             image_path = self.get_image_path_by_xml_path(xml_path)
             save_xml_path = self.get_save_path(xml_path)
@@ -103,6 +104,7 @@ class DatasetResize():
     def resize_dataset_by_min_size(self, min_size):
         annotations_file_list = self.get_annotations()
     
+        print('Resizing dataset ...')
         for xml_path in tqdm.tqdm(annotations_file_list):
             image_path = self.get_image_path_by_xml_path(xml_path)
             save_xml_path = self.get_save_path(xml_path)
