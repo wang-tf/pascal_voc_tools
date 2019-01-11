@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='pascal_voc_tools',
-    version='0.0.7',
+    version='0.0.8',
     author='ternence wang',
     author_email='ternencewang2015@outlook.com',
     description='some tools about pascal voc format dataset',
@@ -18,5 +18,5 @@ setuptools.setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
     ],
-    install_requires=['jinja2', 'opencv-python', 'shutil', 'tqdm'],
+    install_requires=['jinja2', 'opencv-python', 'tqdm'],
 )
