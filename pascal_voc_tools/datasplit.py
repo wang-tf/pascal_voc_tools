@@ -104,7 +104,7 @@ class DataSplit():
         for prefix in groups:
             if not groups[prefix]:
                 continue
-            split_result = self.split_by_rate(groups[prefix], test_rate, val_rate, shuffle)
+            split_result = self.split_by_rate(test_rate, val_rate, name_list=groups[prefix], shuffle=shuffle)
             train_list = train_list + split_result['train']
             test_list = test_list + split_result['test']
             val_list = val_list + split_result['val']
