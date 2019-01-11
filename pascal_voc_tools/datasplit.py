@@ -63,7 +63,7 @@ class DataSplit():
         if name_list is None:
             name_list = self.useful_name_list
 
-        assert 0 < test_rate < 1, 'Error: test_rate {} not in range.'.format(test_rate)
+        assert test_rate < 1, 'Error: test_rate {} not in range.'.format(test_rate)
         assert len(name_list) > 2, 'Error: name_list length is needed more than 2.'
 
         if shuffle:
