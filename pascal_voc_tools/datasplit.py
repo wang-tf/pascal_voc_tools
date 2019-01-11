@@ -25,7 +25,7 @@ class DataSplit():
         if not os.path.exists(self.txt_dir):
             os.makedirs(self.txt_dir)
 
-        self.match_xml_and_jpg()
+        self.useful_name_list = self.match_xml_and_jpg()
 
     def match_xml_and_jpg(self, xmls_dir=None, images_dir=None):
         if xmls_dir == None:
@@ -43,7 +43,10 @@ class DataSplit():
                 
         return useful_name_list
 
-    def prefix_grouping(self, name_list, prefix_list):
+    def prefix_grouping(self, prefix_list, name_list=None):
+        if name_list is None:
+            name_list = self.useful_name_list
+
         groups = {}
         for prefix in prefix_list:
             groups[prefix] = []
@@ -55,7 +58,10 @@ class DataSplit():
 
         return groups
 
-    def split_by_rate(self, name_list, test_rate, val_rate=0.0, shuffle=False):
+    def split_by_rate(self, test_rate, val_rate=0.0, name_list=None, shuffle=False):
+        if name_list is None:
+            name_list = self.useful_name_list
+
         assert 0 < test_rate < 1, 'Error: test_rate {} not in range.'.format(test_rate)
         assert len(name_list) > 2, 'Error: name_list length is needed more than 2.'
 
@@ -104,7 +110,7 @@ class DataSplit():
 
         return {'train': train_list, 'val': val_list, 'test': test_list}
 
-    def save_split_result(self, split_name_dic, save_dir=None):
+    def save(self, split_name_dic, save_dir=None):
         if save_dir is None:
             save_dir = self.txt_dir
 
@@ -122,10 +128,9 @@ def test():
     val_rate = 0.2
 
     spliter = DataSplit(root_dir)
-    name_list = spliter.match_xml_and_jpg()
-    groups = spliter.prefix_grouping(name_list, prefix_list)
+    groups = spliter.prefix_grouping(prefix_list)
     split_result = spliter.split_group_by_rate(groups, test_rate, val_rate=val_rate)
-    spliter.save_split_result(split_result)
+    spliter.save(split_result)
 
 
 if __name__ == '__main__':
