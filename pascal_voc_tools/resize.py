@@ -68,7 +68,7 @@ class DatasetResize():
 
         # resize annotation and save
         xml_file = XmlReader(xml_path)
-        xml_file.setObjectBndbox(rate, save_path=save_xml_path)
+        xml_file.set_object_bndbox(rate, save_path=save_xml_path)
         return 1
 
     def resize_tuple_by_min_size(self, min_size, image_path, xml_path, save_image_path=None, save_xml_path=None):
@@ -128,7 +128,7 @@ class DatasetResize():
         Arguments:
             images_dir: str, the path of ImageSets/Main.
         """
-        if imagesets_dir == None:
+        if imagesets_dir is None:
             imagesets_dir = os.path.join(self.root_dir, 'ImageSets/Main')
 
         # make save dir        
