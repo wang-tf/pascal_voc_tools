@@ -12,7 +12,7 @@ from jinja2 import Environment, PackageLoader
 
 class XmlWriter():
     """Write a xml file about pascal voc annotation."""
-    def __init__(self, path, width, height, depth=3, database='Unknown', segmented=0):
+    def __init__(self, path='', width=0, height=0, depth=3, database='Unknown', segmented=0):
         """Generate a xml file
         Arguments:
             path: str, arg in xml about image.
@@ -62,11 +62,15 @@ class XmlWriter():
             'difficult': difficult,
         })
 
-    def save(self, annotation_path):
+    def save(self, annotation_path, image_parameters=None):
         """Write a xml file to save info.
         Arguments:
             annotation_path: str, the path of xml to save.
         """
+        if image_parameters is not None:
+            for k, v in image_parameters.items():
+                self.template_parameters[k] = image_parameters[k]
+
         with open(annotation_path, 'w') as xml_file:
             content = self.annotation_template.render(**self.template_parameters)
             xml_file.write(content)
