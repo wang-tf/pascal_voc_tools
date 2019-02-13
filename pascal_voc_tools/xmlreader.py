@@ -198,3 +198,6 @@ class XmlReader():
         xml_root = self.root
         annotations = self.parse_element(xml_root)
         return annotations
+
+    def load(self):
+        return self.parse_annotations()
