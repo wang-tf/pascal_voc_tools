@@ -36,7 +36,7 @@ class XmlWriter():
             'depth': depth,
             'database': database,
             'segmented': segmented,
-            'objects': []
+            'object': []
         }
 
     def add_object(self, name, xmin, ymin, xmax, ymax, pose='Unspecified', truncated=0, difficult=0):
@@ -51,15 +51,17 @@ class XmlWriter():
             truncated: str, default is 0.
             difficult: int, default is 0.
         """
-        self.template_parameters['objects'].append({
+        self.template_parameters['object'].append({
             'name': name,
-            'xmin': xmin,
-            'ymin': ymin,
-            'xmax': xmax,
-            'ymax': ymax,
             'pose': pose,
             'truncated': truncated,
             'difficult': difficult,
+            'bndbox': {
+                'xmin': xmin,
+                'ymin': ymin,
+                'xmax': xmax,
+                'ymax': ymax,
+            },
         })
 
     def save(self, annotation_path, image_parameters=None):

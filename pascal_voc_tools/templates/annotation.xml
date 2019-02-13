@@ -11,16 +11,16 @@
         <depth>{{ depth }}</depth>
     </size>
     <segmented>{{ segmented }}</segmented>
-{% for object in objects %}    <object>
-        <name>{{ object.name }}</name>
-        <pose>{{ object.pose }}</pose>
-        <truncated>{{ object.truncated }}</truncated>
-        <difficult>{{ object.difficult }}</difficult>
+{% for obj in object %}    <object>
+        <name>{{ obj.name }}</name>
+        <pose>{{ obj.pose }}</pose>
+        <truncated>{{ obj.truncated }}</truncated>
+        <difficult>{{ obj.difficult }}</difficult>
         <bndbox>
-            <xmin>{{ object.xmin }}</xmin>
-            <ymin>{{ object.ymin }}</ymin>
-            <xmax>{{ object.xmax }}</xmax>
-            <ymax>{{ object.ymax }}</ymax>
+            <xmin>{{ obj.bndbox.xmin }}</xmin>
+            <ymin>{{ obj.bndbox.ymin }}</ymin>
+            <xmax>{{ obj.bndbox.xmax }}</xmax>
+            <ymax>{{ obj.bndbox.ymax }}</ymax>
         </bndbox>
     </object>{% endfor %}
 </annotation>
