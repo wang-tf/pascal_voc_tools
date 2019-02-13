@@ -10,8 +10,8 @@
         <height>{{ height }}</height>
         <depth>{{ depth }}</depth>
     </size>
-    <segmented>{{ segmented }}</segmented>
-{% for obj in object %}    <object>
+    <segmented>{{ segmented }}</segmented>{% for obj in object %}
+    <object>
         <name>{{ obj.name }}</name>
         <pose>{{ obj.pose }}</pose>
         <truncated>{{ obj.truncated }}</truncated>
