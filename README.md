@@ -46,3 +46,5 @@ Actually, if you have a dict have the format same as loaded dict from XmlReader,
 
 ```
 
+add Augmenter from https://github.com/Paperspace/DataAugmentationForObjectDetection
+
