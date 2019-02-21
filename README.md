@@ -5,7 +5,11 @@ This package includes some tools about pascal voc format dataset like read xml, 
 
 ## XmlReader
 `from pascal_voc_tools import XmlReader`
-
+```
+>>> xml_path = './test.xml'
+>>> reader = XmlReader(xml_path)
+>>> ann_dict = reader.load()
+```
 som functions for reading a xml file and geting data in it.
 
 ## XmlWriter
@@ -13,8 +17,14 @@ som functions for reading a xml file and geting data in it.
 
 ```
 >>> writer = XmlWriter(image_path, image_width, image_height, image_depth, database, segmented)
->>> writer.addObject(name, xmin, ymin, xmax, ymax, pose, truncated, difficult)
+>>> writer.add_object(name, xmin, ymin, xmax, ymax, pose, truncated, difficult)
 >>> writer.save(save_path)
+```
+
+Actually, if you have a dict have the format same as loaded dict from XmlReader, you can simply used like:
+```
+>>> writer = XmlWriter()
+>>> writer.save(save_path, ann_dict)
 ```
 
 ## DatasetResize

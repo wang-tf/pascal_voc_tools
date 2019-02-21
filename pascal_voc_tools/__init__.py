@@ -5,6 +5,7 @@ from .resize import DatasetResize
 from .datasplit import DataSplit
 from .image_annotation_split import SplitImageAnnotation
 
+
 name = 'pascal_voc_tools'
 __version__ = version
 
