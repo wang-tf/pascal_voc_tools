@@ -26,6 +26,59 @@ class XmlReader():
         self.file_path = xml_file_path
         self.get_root()
 
+    def save_element_info(self, save_dict, tag, text):
+        """Save tag and text to save_dict.
+        if tag not in save_dict, it will return like save_dict[tag] = text,
+        otherwise it will like save_dict[tag] = [text, ]
+        Arguments:
+            save_dict: dict, to save.
+            tag: str, the key to save.
+            text: str, the value to save.
+        """
+        if tag not in save_dict:
+            if tag != 'object':
+                save_dict[tag] = text
+            else:
+                save_dict[tag] = [text]
+        else:
+            if not isinstance(save_dict[tag], list):
+                save_dict[tag] = [save_dict[tag]]
+            save_dict[tag].append(text)
+            
+    def parse_element(self, element, save_dict=None):
+        """Parse all information in element and save to save_dict.
+        Arguments:
+            element: element, an element type node in xml tree.
+            save_dict: dict, save result.
+        Returns:
+            save_dict: dict, like {'path': './', 'segmented': '0', 'object': [{}]}.
+        """
+        if save_dict is None:
+            save_dict = {}
+
+        for child in element:
+            if len(child) == 0:
+                self.save_element_info(save_dict, child.tag, child.text)
+            else:
+                self.save_element_info(save_dict, child.tag, self.parse_element(child))
+
+        return save_dict
+
+    def parse_annotations(self):
+        """ Parse all annotations under the xml_root.
+        """
+        xml_root = self.root
+        annotations = self.parse_element(xml_root)
+        return annotations
+
+    def load(self):
+        return self.parse_annotations()
+
+
+class XmlReaderTools(XmlReader):
+    def __init__(self):
+        super(XmlReader.self).__init__()
+
     def get_root(self):
         """get root node of the xml
         """
@@ -156,51 +209,3 @@ class XmlReader():
             objects.append({'name': name, 'bbox': bbox, 'pose': pose, 'truncated': truncated, 'difficult': difficult})
 
         return objects
-
-    def save_element_info(self, save_dict, tag, text):
-        """Save tag and text to save_dict.
-        if tag not in save_dict, it will return like save_dict[tag] = text,
-        otherwise it will like save_dict[tag] = [text, ]
-        Arguments:
-            save_dict: dict, to save.
-            tag: str, the key to save.
-            text: str, the value to save.
-        """
-        if tag not in save_dict:
-            if tag is not 'object':
-                save_dict[tag] = text
-            else:
-                save_dict[tag] = [text]
-        else:
-            if not isinstance(save_dict[tag], list):
-                save_dict[tag] = [save_dict[tag]]
-            save_dict[tag].append(text)
-
-    def parse_element(self, element, save_dict=None):
-        """Parse all information in element and save to save_dict.
-        Arguments:
-            element: element, an element type node in xml tree.
-            save_dict: dict, save result.
-        Returns:
-            save_dict: dict, like {'path': './', 'segmented': '0', 'object': [{}]}.
-        """
-        if save_dict is None:
-            save_dict = {}
-
-        for child in element:
-            if len(child) == 0:
-                self.save_element_info(save_dict, child.tag, child.text)
-            else:
-                self.save_element_info(save_dict, child.tag, self.parse_element(child))
-
-        return save_dict
-
-    def parse_annotations(self):
-        """ Parse all annotations under the xml_root.
-        """
-        xml_root = self.root
-        annotations = self.parse_element(xml_root)
-        return annotations
-
-    def load(self):
-        return self.parse_annotations()
