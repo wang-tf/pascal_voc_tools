@@ -26,6 +26,12 @@ class XmlReader():
         self.file_path = xml_file_path
         self.get_root()
 
+    def get_root(self):
+        """get root node of the xml
+        """
+        self.tree = ET.parse(self.file_path)  #打开xml文档
+        self.root = self.tree.getroot()         #获得root节点
+        
     def save_element_info(self, save_dict, tag, text):
         """Save tag and text to save_dict.
         if tag not in save_dict, it will return like save_dict[tag] = text,
@@ -44,7 +50,7 @@ class XmlReader():
             if not isinstance(save_dict[tag], list):
                 save_dict[tag] = [save_dict[tag]]
             save_dict[tag].append(text)
-            
+
     def parse_element(self, element, save_dict=None):
         """Parse all information in element and save to save_dict.
         Arguments:
@@ -78,12 +84,6 @@ class XmlReader():
 class XmlReaderTools(XmlReader):
     def __init__(self):
         super(XmlReader.self).__init__()
-
-    def get_root(self):
-        """get root node of the xml
-        """
-        self.tree = ET.parse(self.file_path)  #打开xml文档
-        self.root = self.tree.getroot()         #获得root节点
 
     def get_file_name(self):
         """Get file name node information in xml"""
