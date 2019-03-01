@@ -167,7 +167,10 @@ class XmlReader():
             text: str, the value to save.
         """
         if tag not in save_dict:
-            save_dict[tag] = text
+            if tag is not 'object':
+                save_dict[tag] = text
+            else:
+                save_dict[tag] = [text]
         else:
             if not isinstance(save_dict[tag], list):
                 save_dict[tag] = [save_dict[tag]]

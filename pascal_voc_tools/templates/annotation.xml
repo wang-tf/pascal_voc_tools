@@ -3,12 +3,12 @@
     <filename>{{ filename }}</filename>
     <path>{{ path }}</path>
     <source>
-        <database>{{ database }}</database>
+        <database>{{ source.database }}</database>
     </source>
     <size>
-        <width>{{ width }}</width>
-        <height>{{ height }}</height>
-        <depth>{{ depth }}</depth>
+        <width>{{ size.width }}</width>
+        <height>{{ size.height }}</height>
+        <depth>{{ size.depth }}</depth>
     </size>
     <segmented>{{ segmented }}</segmented>{% for obj in object %}
     <object>

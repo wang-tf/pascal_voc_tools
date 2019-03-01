@@ -5,6 +5,32 @@
 @Time: 2019-01-14
 @Author: ternencewang
 @Direc: write a xml file about pascal voc annotation.
+<annotation>
+    <folder>{{ folder }}</folder>
+    <filename>{{ filename }}</filename>
+    <path>{{ path }}</path>
+    <source>
+        <database>{{ database }}</database>
+    </source>
+    <size>
+        <width>{{ size.width }}</width>
+        <height>{{ size.height }}</height>
+        <depth>{{ size.depth }}</depth>
+    </size>
+    <segmented>{{ segmented }}</segmented>{% for obj in object %}
+    <object>
+        <name>{{ obj.name }}</name>
+        <pose>{{ obj.pose }}</pose>
+        <truncated>{{ obj.truncated }}</truncated>
+        <difficult>{{ obj.difficult }}</difficult>
+        <bndbox>
+            <xmin>{{ obj.bndbox.xmin }}</xmin>
+            <ymin>{{ obj.bndbox.ymin }}</ymin>
+            <xmax>{{ obj.bndbox.xmax }}</xmax>
+            <ymax>{{ obj.bndbox.ymax }}</ymax>
+        </bndbox>
+    </object>{% endfor %}
+</annotation>
 """
 import os
 from jinja2 import Environment, PackageLoader
@@ -31,10 +57,8 @@ class XmlWriter():
             'path': abspath,
             'filename': os.path.basename(abspath),
             'folder': os.path.basename(os.path.dirname(abspath)),
-            'width': width,
-            'height': height,
-            'depth': depth,
-            'database': database,
+            'size': {'width': width, 'height': height, 'depth': depth, },
+            'source': {'database': database, },
             'segmented': segmented,
             'object': []
         }
