@@ -29,9 +29,9 @@ class XmlReader():
     def get_root(self):
         """get root node of the xml
         """
-        self.tree = ET.parse(self.file_path)  #打开xml文档
-        self.root = self.tree.getroot()         #获得root节点
-        
+        self.tree = ET.parse(self.file_path)
+        self.root = self.tree.getroot()
+
     def save_element_info(self, save_dict, tag, text):
         """Save tag and text to save_dict.
         if tag not in save_dict, it will return like save_dict[tag] = text,
@@ -82,22 +82,20 @@ class XmlReader():
 
 
 class XmlReaderTools(XmlReader):
-    def __init__(self):
-        super(XmlReader.self).__init__()
+    def __init__(self, xml_file_path, debug=False):
+        super(XmlReader.self).__init__(xml_file_path, debug)
 
     def get_file_name(self):
         """Get file name node information in xml"""
-        print("*"*10)
         filename = self.root.find('filename').text
-        filename = filename[:-4]
-        print(filename)
+        return filename
 
     def get_width_and_height(self):
         """Get width and height of image in xml"""
-        for size in self.root.findall('size'): # 找到root节点下的size节点
-            width = size.find('width').text   # 子节点下节点width的值
-            height = size.find('height').text   # 子节点下节点height的值
-            print(width, height)
+        for size in self.root.findall('size'):
+            width = size.find('width').text
+            height = size.find('height').text
+        return width, height
 
     def get_object_list(self):
         """Get all object name and number"""
@@ -118,7 +116,6 @@ class XmlReaderTools(XmlReader):
             name: str, the name of object
         """
         name = object.find('name').text
-        # print('Object name is :{}'.format(name))
         return name
     
     def get_object_pose(self, object):
