@@ -1,1 +1,2 @@
 include pascal_voc_tools/templates/*.xml
+recursive-include pascal_voc_tools/utils *
