@@ -1,5 +1,29 @@
+from Cython.Build import cythonize
+from setuptools import Extension
+
 import setuptools
 from pascal_voc_tools._version import version
+
+import numpy as np
+
+_NP_INCLUDE_DIRS = np.get_include()
+
+
+# Extension modules
+ext_modules = [
+    Extension(
+        name='pascal_voc_tools.utils.cython_nms',
+        sources=[
+            'pascal_voc_tools/utils/cython_nms.pyx'
+        ],
+        extra_compile_args=[
+            '-Wno-cpp'
+        ],
+        include_dirs=[
+            _NP_INCLUDE_DIRS
+        ]
+    ),
+]
 
 
 with open('README.md', 'r') as fh:
@@ -22,4 +46,5 @@ setuptools.setup(
         'Operating System :: OS Independent',
     ],
     install_requires=['jinja2', 'opencv-python', 'tqdm'],
+    ext_modules=cythonize(ext_modules),
 )
