@@ -70,12 +70,12 @@ def nms(dets, thresh):
             j = order[_j]
             if suppressed[j] == 1:
                 continue
-            xx1 = np.max(ix1, x1[j])
-            yy1 = np.max(iy1, y1[j])
-            xx2 = np.min(ix2, x2[j])
-            yy2 = np.min(iy2, y2[j])
-            w = np.max(0.0, xx2 - xx1 + 1)
-            h = np.max(0.0, yy2 - yy1 + 1)
+            xx1 = np.maximum(ix1, x1[j])
+            yy1 = np.maximum(iy1, y1[j])
+            xx2 = np.minimum(ix2, x2[j])
+            yy2 = np.minimum(iy2, y2[j])
+            w = np.maximum(0.0, xx2 - xx1 + 1)
+            h = np.maximum(0.0, yy2 - yy1 + 1)
             inter = w * h
             ovr = inter / (iarea + areas[j] - inter)
             if ovr >= thresh:
@@ -149,9 +149,9 @@ def soft_nms(boxes_in, sigma=0.5, Nt=0.3, threshold=0.001, method=0):
             s = boxes[pos, 4]
 
             area = (x2 - x1 + 1) * (y2 - y1 + 1)
-            iw = (np.min(tx2, x2) - np.max(tx1, x1) + 1)
+            iw = (np.minimum(tx2, x2) - np.maximum(tx1, x1) + 1)
             if iw > 0:
-                ih = (np.min(ty2, y2) - np.max(ty1, y1) + 1)
+                ih = (np.minimum(ty2, y2) - np.maximum(ty1, y1) + 1)
                 if ih > 0:
                     ua = float((tx2 - tx1 + 1) *
                                (ty2 - ty1 + 1) + area - iw * ih)
@@ -187,3 +187,4 @@ def soft_nms(boxes_in, sigma=0.5, Nt=0.3, threshold=0.001, method=0):
             pos = pos + 1
 
     return boxes[:N], inds[:N]
+
