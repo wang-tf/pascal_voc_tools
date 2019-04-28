@@ -8,16 +8,27 @@ from collections import OrderedDict
 class Layer():
     """Darknet Layer Struct"""
     def __init__(self, name):
+        """
+        Arguments:
+            name: str, layer name.
+        """
         self.name = name
         self.param = OrderedDict()
 
 
 class DarknetConfig():
+    """Tools about config file for darknet.
+    """
     def __init__(self):
         self.layers = None
 
     def parse(self, config_path):
-        """解析darknet的config文件"""
+        """decode the config file for darknet
+        Arguments:
+            config_path: str, the path of config file;
+        Returns:
+            layers: list, including Layer struct.
+        """
         with open(config_path) as f:
             config_data = f.read().strip().split('\n')
             # config_data = [line.strip() for line in config_data if line]
@@ -31,7 +42,7 @@ class DarknetConfig():
             param_list = param_str.strip().split('\n')
             new_layer = Layer(name)
             for param in param_list:
-                if param == '' or param[0] == '#':
+                if param.strip() == '' or param[0] == '#':
                     key = param
                     value = ''
                 else:
@@ -46,6 +57,14 @@ class DarknetConfig():
         return layers
 
     def change_anchors(self, layers, new_anchors):
+        """
+        Arguments:
+            layers: list, the list of Layers;
+            new_anchors: list, which have n anchors, for each
+                         anchor it has the format like [w, h].
+        Returns:
+            layers: list, the layers had been changed.
+        """
         for i, layer in enumerate(layers):
             if layer.name == 'yolo':
                 mask = layer.param['mask'].split(',')
@@ -60,13 +79,17 @@ class DarknetConfig():
         return layers
 
     def save(self, layers, save_path):
-        """保存parser解析的layer结构"""
+        """Saving the list of Layer to save_path.
+        Arguments:
+            layers: list, have some Layers;
+            save_path: str, the path using to save.
+        """
         config_data = []
         for layer in layers:
             param_list = []
             for key, val in layer.param.items():
-                if key == '' or key[0] == '#':
-                    param_list.append(key+' '+val)
+                if key.strip() == '' or key[0] == '#':
+                    param_list.append((key+' '+val).strip())
                 else:
                     param_list.append(key+' = ' + val)
             name = '['+layer.name+']'
@@ -79,6 +102,11 @@ class DarknetConfig():
         return 0
 
     def check_yolo(self, cfg_file, label_list_file):
+        """Using to check some key in yolo config.
+        Arguments:
+            cfg_file: str, the config file path;
+            label_list_file: str, the file of label list;
+        """
         assert os.path.exists(cfg_file), cfg_file
         assert os.path.exists(label_list_file), label_list_file
 
