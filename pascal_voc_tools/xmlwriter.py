@@ -103,9 +103,23 @@ class XmlWriter():
             annotation_path: str, the path of xml to save.
         """
         if image_parameters is not None:
+            self.check_format(image_parameters)
             for k, v in image_parameters.items():
                 self.template_parameters[k] = v
 
         with open(annotation_path, 'w') as xml_file:
             content = self.annotation_template.render(**self.template_parameters)
             xml_file.write(content)
+
+    def check_format(self, template_parameters):
+        for key in ['path', 'filename', 'folder', 'size', 'source', 'segmented', 'object']:
+            assert key in template_parameters, "Can not find the key: {}".format(key)
+        for key in ['width', 'height', 'depth']:
+            assert key in template_parameters['size'], "Can not find the key in size: {}".format(key)
+        
+        assert isinstance(template_parameters['object'], list)
+        for one_obj in template_parameters['object']:
+            for key in ['name', 'pose', 'truncated', 'difficult', 'bndbox']:
+                assert key in one_obj, "Can not find the key in object: {}".format(key)
+                for key in ['xmin', 'ymin','xmax', 'ymax']:
+                    assert key in one_obj['bndbox'], "Can not find the key in bndbox: {}".format(key)
