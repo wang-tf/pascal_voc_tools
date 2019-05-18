@@ -43,5 +43,13 @@ class AnnotationTools():
                 file_name = os.path.basename(xml_path)
                 if file_name not in name_dict[name]['included_file']:
                     name_dict[name]['included_file'].append(file_name)
-
         return name_dict
+
+    def get_bbox_info(self):
+        for xml_path in self.ann_list:
+            xml_data = XmlReader(xml_path).load()
+            size = [int(xml_data['size']['heihgt']), int(xml_data['size']['width'])]
+            if 0 in size:
+                print('Warrning: {} size error: {}'.format(xml_path, size))
+                continue
+            objects = xml_data['object']

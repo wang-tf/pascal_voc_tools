@@ -33,6 +33,7 @@
 </annotation>
 """
 import os
+import cv2
 from jinja2 import Environment, PackageLoader
 
 
@@ -52,6 +53,14 @@ class XmlWriter():
         self.annotation_template = environment.get_template('annotation.xml')
 
         abspath = os.path.abspath(path)
+        try:
+            assert os.path.exists(abspath)
+            image = cv2.imread(abspath)
+            height = image.shape[0]
+            width = image.shape[1]
+            depth = image.shape[3] if len(image.shape) == 3 else 1
+        except AssertionError:
+            print('Warrning: can not fine path: {}'.format(abspath))
 
         self.template_parameters = {
             'path': abspath,
@@ -95,7 +104,7 @@ class XmlWriter():
         """
         if image_parameters is not None:
             for k, v in image_parameters.items():
-                self.template_parameters[k] = image_parameters[k]
+                self.template_parameters[k] = v
 
         with open(annotation_path, 'w') as xml_file:
             content = self.annotation_template.render(**self.template_parameters)
