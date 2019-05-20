@@ -11,7 +11,7 @@ except ImportError:
 from xmlwriter import XmlWriter
 
 
-def check_jpg_format(jpeg_path):
+def verify_image(jpeg_path):
     """Verify image format.
     Arguments:
     =========
@@ -23,11 +23,6 @@ def check_jpg_format(jpeg_path):
     assert os.path.exists(jpeg_path), jpeg_path
     try:
         Image.open(jpeg_path).verify()
-        suffix = os.path.basename(jpeg_path).split('.')[-1]
-        if suffix != 'jpg':
-            image = Image.open(jpeg_path)
-            image.save(jpeg_path.replace('.{}'.format(suffix), '.jpg'))
-            os.remove(jpeg_path)
     except:
         return False
     return True
@@ -136,3 +131,55 @@ def check_jpg_xml_match(xml_dir, jpeg_dir):
         print("Only have jpg file: {}\n{}".format(len(jpeg_diff), jpeg_diff))
 
     return inter
+
+
+def check_image_format(jpeg_dir):
+    """
+    Change image format from others to jpg.
+    Arguments:
+    =========
+        jpeg_dir: str, the dir only have image.
+    """
+    image_path_list = glob.glob(os.path.join(jpeg_dir, '*.*'))
+    for jpeg_path in image_path_list:
+        suffix = os.path.basename(jpeg_path).split('.')[-1]
+        if suffix != 'jpg' and verify_image(jpeg_path):
+            image = Image.open(jpeg_path)
+            save_path = jpeg_path.replace('.{}'.format(suffix), '.jpg')
+            image.save(save_path)
+            os.remove(jpeg_path)
+            print('Image from {} to {}'.format(jpeg_path, save_path))
+
+    return True
+
+def check_xml_info(xml_info):
+    """
+    """
+    # check image path
+    assert 'path' in xml_info, 'Can not find key(path).'
+    image_path = xml_info['path']
+
+    assert os.path.exists(image_path), image_path
+    image = Image.open(image_path)
+    
+    # check image size
+    assert 'size' in xml_info, 'Can not find key(size).'
+    size = xml_info['size']
+    width, height = image.size()
+    assert int(size['width']) == width
+    assert int(size['height']) == height
+    depth = 1 if len(image.mode()) == 1 else 3
+    assert int(size['depth']) == depth
+
+    # check object
+    objects = xml_info['object']
+    for one_obj in objects:
+        bndbox = one_obj['bndbox']
+        xmin = int(bndbox['xmin'])
+        ymin = int(bndbox['ymin'])
+        xmax = int(bndbox['xmax'])
+        ymax = int(bndbox['ymax'])
+        assert xmin > 0, xmin
+        assert ymin > 0, ymin
+        assert xmax < width, xmax
+        assert ymax < height, ymax
