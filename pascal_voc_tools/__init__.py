@@ -28,10 +28,11 @@ from .image_annotation_split import SplitImageAnnotation
 from .annotation_tools import AnnotationTools
 from .anchors_kmeans import AnchorsKMeans
 from .darknet_config import DarknetConfig
+from ._xml_parser import XmlParser
 
 __all__ = ['version', 'XmlReader', 'XmlWriter', 'DatasetResize',
            'DataSplit', 'DarknetDataset', 'SplitImageAnnotation',
-           'AnnotationTools', 'AnchorsKMeans', 'DarknetConfig']
+           'AnnotationTools', 'AnchorsKMeans', 'DarknetConfig', 'XmlParser']
 
 name = 'pascal_voc_tools'
 __version__ = version
