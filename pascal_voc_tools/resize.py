@@ -9,20 +9,20 @@
 @Dest: resize the whole dataset
 """
 
-
 import os
 import glob
 import cv2
 import shutil
 import tqdm
 
-from .xmlreader import XmlReader
+from ._xml_parser import XmlParser
 
 
 class DatasetResize():
     def __init__(self, root_voc_dir, save_root_dir=None):
         """
         Arguments:
+        ==========
             root_voc_dir: str, the path of pascal voc dir include VOC2007.
             save_root_dir: str, the path of save path, default path is input path.
         """
@@ -49,6 +49,7 @@ class DatasetResize():
     def resize_tuple_by_rate(self, rate, image_path, xml_path, save_image_path=None, save_xml_path=None):
         """Resize a image and coresponding xml
         Arguments:
+        ==========
             rate: float or int, scale size.
             image_path: str, the path of image.
             xml_path: str, the path of xml file.
@@ -67,7 +68,7 @@ class DatasetResize():
         cv2.imwrite(save_image_path, image_resized)
 
         # resize annotation and save
-        xml_file = XmlReader(xml_path)
+        xml_file = XmlParser().load(xml_path)
         xml_file.set_object_bndbox(rate, save_path=save_xml_path)
         return 1
 
@@ -89,6 +90,7 @@ class DatasetResize():
     def resize_dataset_by_rate(self, rate):
         """Resize the whole dataset
         Arguments:
+        ==========
             rate: float or int, scale size.
         """
         annotations_file_list = self.get_annotations()
@@ -126,6 +128,7 @@ class DatasetResize():
     def copy_imagesets(self, imagesets_dir=None):
         """Copy some text file in Main dir from root dir to save dir
         Arguments:
+        ==========
             images_dir: str, the path of ImageSets/Main.
         """
         if imagesets_dir is None:
@@ -155,4 +158,3 @@ def test():
 
 if __name__ == '__main__':
     test()
-

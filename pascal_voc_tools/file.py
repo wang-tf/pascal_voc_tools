@@ -8,8 +8,6 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 
-from xmlwriter import XmlWriter
-
 
 def verify_image(jpeg_path):
     """Verify image format.
@@ -26,79 +24,6 @@ def verify_image(jpeg_path):
     except:
         return False
     return True
-
-
-def _save_element_info(save_dict, tag, text):
-    """Save tag and text to save_dict.
-    if tag not in save_dict, it will return like save_dict[tag] = text,
-    otherwise it will like save_dict[tag] = [text, ]
-    Arguments:
-        save_dict: dict, to save.
-        tag: str, the key to save.
-        text: str, the value to save.
-    """
-    if tag not in save_dict:
-        if tag != 'object':
-            save_dict[tag] = text
-        else:
-            save_dict[tag] = [text]
-    else:
-        if not isinstance(save_dict[tag], list):
-            save_dict[tag] = [save_dict[tag]]
-        save_dict[tag].append(text)
-
-
-def _parse_element(element, save_dict=None):
-    """Parse all information in element and save to save_dict.
-    Arguments:
-        element: element, an element type node in xml tree.
-        save_dict: dict, save result.
-    Returns:
-        save_dict: dict, like {'path': './', 'segmented': '0', 'object': [{}]}.
-    """
-    if save_dict is None:
-        save_dict = {}
-
-    for child in element:
-        if len(child) == 0:
-            _save_element_info(save_dict, child.tag, child.text)
-        else:
-            _save_element_info(save_dict, child.tag, _parse_element(child))
-
-    return save_dict
-
-
-def xmlread(file_path, debug=False):
-    """
-    Parse all information in element and save to save_dict.
-    Arguments:
-    =========
-        file_path: str, the path of a xml file.
-    Returns:
-    =======
-        save_dict: dict, like {'path': './', 'segmented': '0', 'object': [{}]}.
-    """
-    # assert input file path
-    assert os.path.exists(file_path), "ERROR: can not find file: {}".format(file_path)
-
-    # get root node of the xml
-    tree = ET.parse(file_path)
-    root = tree.getroot()
-
-    xml_info = _parse_element(root)
-    return xml_info
-
-
-def xmlwrite(save_path, xml_dict):
-    """
-    Save formated xml_dict to a xml file.
-    Arguments:
-    =========
-        save_path: str, the xml path for saving;
-        xml_dict: dict, original data.
-    """
-    writer = XmlWriter()
-    writer.save(save_path, xml_dict)
 
 
 def check_jpg_xml_match(xml_dir, jpeg_dir):
@@ -152,11 +77,16 @@ def check_image_format(jpeg_dir):
 
     return True
 
+
 def check_xml_info(xml_info):
     """
+    Arguments:
+    ==========
+        xml_info: dict, including xml data. 
     """
     # check image path
     assert 'path' in xml_info, 'Can not find key(path).'
+
     image_path = xml_info['path']
 
     assert os.path.exists(image_path), image_path

@@ -89,9 +89,6 @@ class DarknetDataset():
                     self.convert_annotation(year, image_id, voc_root_path)
                 list_file.write('\n'.join(image_file_list))
 
-        #os.system("cat {0}/2007_train.txt {0}/2007_val.txt > {0}/train.txt".format(voc_root_path))
-        #os.system("cat {0}/2007_train.txt {0}/2007_val.txt {0}/2007_test.txt > {0}/train.all.txt".format(voc_root_path))
-
 
 def test():
     dataset = DarknetDataset()
