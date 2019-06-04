@@ -7,8 +7,8 @@ pascal voc format dataset and some usrful
 functions.
 
 some function in the below list:
-1. XmlReader
-2. XmlWriter
+1. XmlParser
+2. 
 3. DatasetResize
 4. DataSplit
 5. DarknetDataset
@@ -19,8 +19,6 @@ some function in the below list:
 """
 
 from ._version import version
-from .xmlreader import XmlReader
-from .xmlwriter import XmlWriter
 from .resize import DatasetResize
 from .datatools import DataSplit
 from .datatools import DarknetDataset
@@ -30,7 +28,7 @@ from .anchors_kmeans import AnchorsKMeans
 from .darknet_config import DarknetConfig
 from ._xml_parser import XmlParser
 
-__all__ = ['version', 'XmlReader', 'XmlWriter', 'DatasetResize',
+__all__ = ['version', 'DatasetResize',
            'DataSplit', 'DarknetDataset', 'SplitImageAnnotation',
            'AnnotationTools', 'AnchorsKMeans', 'DarknetConfig', 'XmlParser']
 

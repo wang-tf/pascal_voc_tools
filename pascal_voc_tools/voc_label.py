@@ -91,3 +91,12 @@ class DarknetDataset():
 
         #os.system("cat {0}/2007_train.txt {0}/2007_val.txt > {0}/train.txt".format(voc_root_path))
         #os.system("cat {0}/2007_train.txt {0}/2007_val.txt {0}/2007_test.txt > {0}/train.all.txt".format(voc_root_path))
+
+
+def test():
+    dataset = DarknetDataset()
+
+
+if __name__ == '__main__':
+    test()
+
