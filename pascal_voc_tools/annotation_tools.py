@@ -11,7 +11,7 @@
 # here put the import lib
 import os
 import glob
-from .xmlreader import XmlReader
+from ._xml_parser import XmlParser
 
 
 class AnnotationTools():
@@ -34,7 +34,7 @@ class AnnotationTools():
     def get_class_dict(self):
         name_dict = {}
         for xml_path in self.ann_list:
-            xml_data = XmlReader(xml_path).load()
+            xml_data = XmlParser().load(xml_path)
             xml_name_list = [obj['name'] for obj in xml_data['object']]
             for name in xml_name_list:
                 if name not in name_dict:

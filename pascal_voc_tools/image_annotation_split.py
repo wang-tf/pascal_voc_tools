@@ -12,8 +12,7 @@ import glob
 import numpy as np
 import cv2
 
-from .xmlreader import XmlReader
-from .xmlwriter import XmlWriter
+from ._xml_parser import XmlParser
 from .iou import bb_intersection_over_union as iou
 
 
@@ -128,11 +127,6 @@ class SplitImageAnnotation():
 
         return subannotations
 
-    def get_annotations(self, xml_path):
-        xml_reader = XmlReader(xml_path)
-        annotations = xml_reader.get_all_object()
-        return annotations
-
     def split_dir(self):
         images_path, xmls_path = self.match_jpg_xml()
         print('images: {}, xmls: {}'.format(len(images_path), len(xmls_path)))
@@ -160,8 +154,8 @@ class SplitImageAnnotation():
         split_bboxes = self.get_split_bboxes(width=image.shape[1], height=image.shape[0], cover_thresh=cover_thresh)
         subimages = self.split_image(image, split_bboxes)
 
-        annotations = self.get_annotations(xml_path)
-        subannotations = self.split_annotations(annotations, split_bboxes)
+        xml_info = XmlParser().load(xml_path)
+        subannotations = self.split_annotations(xml_info, split_bboxes)
         
         return subimages, subannotations
 
