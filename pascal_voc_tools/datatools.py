@@ -23,6 +23,7 @@ class DataSplit():
     def __init__(self, root_dir):
         """
         Arguments:
+        ==========
             root_dir: str, the directory path including JPEGImages
                       and Annotations;
         """
@@ -43,9 +44,12 @@ class DataSplit():
         """Finding corresponding jpg file for xml file in xmls_dir,
         the list of file name will be returned.
         Arguments:
+        ==========
             xmls_dir: str, the directory path including xmls;
             images_dir: str, the directory path incuding images;
+
         Returns:
+        ========
             useful_name_list: str, the list of image name which
                               have corresponding xml file.
         """
@@ -67,12 +71,14 @@ class DataSplit():
     def prefix_grouping(self, prefix_list, name_list=None):
         """
         Arguments:
+        ==========
             prefix_list: list, the images which have the same string
                          will save in the same list that as the value
                          of the prefix string as the key.
             name_list: list, default is None, whick have all useful
                          name as the whole dataset.
         Returns:
+        ========
             groups: map, the key is the string in prefix_list, the value
                     is a list that all name in it has corresponding prefix.
         """
@@ -93,12 +99,15 @@ class DataSplit():
     def split_by_rate(self, test_rate, val_rate=0.0, name_list=None, shuffle=False):
         """
         Arguments:
+        ==========
             test_rate: float, the test data rate for all data;
             val_rate: float, default is 0.0, the val data rate for all data;
             name_list: list, all useful name in this data.
             shuffle: bool, default is False, The name_list will be shuffled
                      if it is true.
+
         Returns:
+        ========
             splited_data: map, the key is str in ['train', 'val', 'test'],
                           the value is the list of names. 
         """
@@ -134,11 +143,14 @@ class DataSplit():
     def split_group_by_rate(self, groups, test_rate, val_rate=0.0, shuffle=False):
         """
         Arguments:
+        ==========
             groups: dict like {prefix: [name, ]}, grouped name list.
             test_rate: float, the test rate of all data.
             val_rate: float, the val rate of all data, default is 0.0.
             shuffle: bool, default is False.
+
         Returns:
+        ========
             result: dict like {'train': [], 'val': [], 'test': []}.
         """
         train_list, val_list, test_list = [], [], []
@@ -158,6 +170,7 @@ class DataSplit():
     def save(self, split_name_dic, save_dir=None):
         """
         Arguments:
+        ==========
             split_name_dic: map, the splited result fo dataset.
             save_dir: str, default is None, the path using to save result.
                       if None, the result will saved in Main dir corresponding

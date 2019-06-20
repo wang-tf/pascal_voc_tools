@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
+"""
+Calculating anchors using k-means for yolov3.
+"""
+
 import numpy as np
 import os
 import random
@@ -8,12 +12,15 @@ import random
 __DEBUG__ = False
 
 
-def width_and_height_iou(x, centroids):
+def _width_and_height_iou(x, centroids):
     """
     Arguments:
+    ==========
         x: 某一个ground truth的w,h;
         centroids: anchor的w,h的集合[(w,h),(),...]，共k个;
+
     Return:
+    =======
         单个ground truth box与所有k个anchor box的IoU值集合;
     """
     IoUs = []
@@ -32,29 +39,36 @@ def width_and_height_iou(x, centroids):
     return np.array(IoUs)
 
 
-def avg_IOU(X, centroids):
+def _avg_IOU(X, centroids):
     '''
     Arguments:
+    ==========
         X: ground truth的w,h的集合[(w,h),(),...]
         centroids: anchor的w,h的集合[(w,h),(),...]，共k个
+
     Return:
+    =======
         centroids与ground truth 的平均iou
     '''
     n, d = X.shape
     sum = 0.
     for i in range(X.shape[0]):
         # 返回一个ground truth与所有anchor的IoU中的最大值
-        sum += max(width_and_height_iou(X[i], centroids))
+        sum += max(_width_and_height_iou(X[i], centroids))
     return sum/n  # 对所有ground truth求平均
 
 
-def write_anchors_to_file(anchors, X, anchor_file):
+def _write_anchors_to_file(anchors, X, anchor_file):
     '''
+
     Arguments:
+    ==========
         centroids: anchor的w,h的集合[(w,h),(),...]，共k个
         X: ground truth的w,h的集合[(w,h),(),...]
         anchor_file: anchor和平均IoU的输出路径
+
     Return:
+    =======
         anchors: saved anchors.
     '''
     with open(anchor_file, 'w') as f:
@@ -63,14 +77,17 @@ def write_anchors_to_file(anchors, X, anchor_file):
             anchors_str.append('{:.2f},{:.2f}'.format(
                 anchors[i, 0], anchors[i, 1]))
         f.write(', '.join(anchors_str) + '\n')
-        f.write('%f\n' % (avg_IOU(X, anchors)))
+        f.write('%f\n' % (_avg_IOU(X, anchors)))
 
 
-def kmeans(ground_truth_list, centroids):
+def _kmeans(ground_truth_list, centroids):
     """以长宽的iou作为距离度量，以centroids为质心聚类
+
     Arguments:
+    ==========
         ground_truth_list: 所有ground truth的长宽
         centroids: 初始化的质心
+
     """
     ground_truth_number = ground_truth_list.shape[0]
     print("centroids.shape", centroids)
@@ -86,7 +103,7 @@ def kmeans(ground_truth_list, centroids):
         iterator += 1
         for i in range(ground_truth_number):
             distance = 1 - \
-                width_and_height_iou(ground_truth_list[i], centroids)
+                _width_and_height_iou(ground_truth_list[i], centroids)
             all_distance.append(distance)
         # 得到每个ground truth对每个anchor的IoU
         all_distance = np.array(all_distance)
@@ -124,9 +141,12 @@ class AnchorsKMeans():
     """
 
     def __init__(self, filelist):
-        """
+        """like 2007_train.txt, data fromat must have labels
+
         Arguments:
+        ==========
             filelist: path to filelist;
+
         """
         self.filelist = filelist
         self.anchors = None
@@ -139,15 +159,20 @@ class AnchorsKMeans():
 
         anchor_file = os.path.join(output_dir, 'anchors%d.txt' %
                                    (len(self.anchors)))  # save path
-        write_anchors_to_file(
+        _write_anchors_to_file(
             self.anchors, self.ground_truth_list, anchor_file)
 
-    def calculate(self, num_clusters=9, yolo_version='yolov3', yolo_input_shape=416):
+    def calculate(self, num_clusters, yolo_input_shape, yolo_version='yolov3'):
         """
         Arguments:
+        ==========
             num_clusters: number of clusters;
             yolo_version: default='yolov3', yolov2 or yolov3;
-            yolo_input_shape: default=1056, input images shape，multiples of 32. etc. 416*416;
+            yolo_input_shape: input images shape，multiples of 32. etc. 416*416;
+
+        Return:
+        =======
+            anchors
 
         """
         # read filelist
@@ -172,7 +197,7 @@ class AnchorsKMeans():
         indices = [random.randrange(annotation_dims.shape[0])
                    for i in range(num_clusters)]
         centroids = annotation_dims[indices]
-        centroids = kmeans(annotation_dims, centroids)
+        centroids = _kmeans(annotation_dims, centroids)
 
         anchors = centroids.copy()
         if yolo_version == 'yolov2':
@@ -206,3 +231,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
