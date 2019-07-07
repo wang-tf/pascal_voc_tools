@@ -3,6 +3,16 @@
 
 
 def bb_intersection_over_union(boxA, boxB):
+    """calculate intersection over union between two boundboxes.
+
+    Arguments:
+    ==========
+        boxA: list of xmin, ymin, xmax, ymax;
+        boxB: list of xmin, ymin, xmax, ymax;
+    Return:
+    =======
+        a float number of iou between two inputs.
+    """
     # determine the (x, y)-coordinates of the intersection rectangle
     xA = max(boxA[0], boxB[0])
     yA = max(boxA[1], boxB[1])
@@ -24,3 +34,11 @@ def bb_intersection_over_union(boxA, boxB):
 
     # return the intersection over union value
     return iou
+
+
+def average_precision_11_point():
+    return
+
+
+def average_precision_matric():
+    return

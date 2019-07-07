@@ -12,26 +12,35 @@
 import numpy as np
 
 
-def voc_ap(rec, prec, use_07_metric=False):
-    """ ap = voc_ap(rec, prec, [use_07_metric])
+def voc_ap(recall, precision, use_07_metric=False):
+    """ ap = voc_ap(recall, precision, [use_07_metric])
     Compute VOC AP given precision and recall.
     If use_07_metric is true, uses  the
     VOC 07 11 point method (default: False).
+
+    Arguments:
+    ==========
+        recall: the shape of (n,) ndarray;
+        precision: the shape of (n,) ndarray;
+        use_07_metric: if true, the 11 points method will be used.
+    Return:
+    =======
+        the float number result of average precision.
     """
     if use_07_metric:
         # 11 point metric
         ap = 0.
         for t in np.arange(0., 1.1, 0.1):
-            if np.sum(rec >= t) == 0:
+            if np.sum(recall >= t) == 0:
                 p = 0
             else:
-                p = np.max(prec[rec >= t])
+                p = np.max(precision[recall >= t])
             ap = ap + p / 11.
     else:
         # correct AP calculation
         # first append sentinel values at the end
-        mrec = np.concatenate(([0.], rec, [1.]))
-        mpre = np.concatenate(([0.], prec, [0.]))
+        mrec = np.concatenate(([0.], recall, [1.]))
+        mpre = np.concatenate(([0.], precision, [0.]))
 
         # compute the precision envelope
         for i in range(mpre.size - 1, 0, -1):
@@ -47,6 +56,16 @@ def voc_ap(rec, prec, use_07_metric=False):
 
 
 def compute_overlaps(BBGT, bb):
+    """compute intersection over union of ndarray.
+
+    Arguments:
+    ==========
+        BBGT: the (n, 4) shape ndarray, ground truth boundboxes;
+        bb: the (n, 4) shape ndarray, detected boundboxes;
+    Return:
+    =======
+        a (n, ) shape ndarray.
+    """
     # compute overlaps
     # intersection
     ixmin = np.maximum(BBGT[:, 0], bb[0])
@@ -58,14 +77,14 @@ def compute_overlaps(BBGT, bb):
     inters = iw * ih
 
     # union
-    uni = ((bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.) +
-        (BBGT[:, 2] - BBGT[:, 0] + 1.) *
-        (BBGT[:, 3] - BBGT[:, 1] + 1.) - inters)
+    BBGT_area = (BBGT[:, 2] - BBGT[:, 0] + 1.) * (BBGT[:, 3] - BBGT[:, 1] + 1.)
+    bb_area = (bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.)
+    iou = inters / (bb_area + BBGT_area - inters)
 
-    return inters / uni
+    return iou
 
 
-def voc_eval(class_recs, detect, ovthresh=0.5, use_07_metric=False, use_difficult=True):
+def voc_eval(class_recs, detect, ovthresh=0.5, use_07_metric=False):
     """rec, prec, ap = voc_eval(class_recs, detect,
                                 [ovthresh],
                                 [use_07_metric])

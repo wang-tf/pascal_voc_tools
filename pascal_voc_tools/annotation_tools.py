@@ -47,7 +47,7 @@ class AnnotationTools():
 
     def get_bbox_info(self):
         for xml_path in self.ann_list:
-            xml_data = XmlReader(xml_path).load()
+            xml_data = XmlParser().load(xml_path)
             size = [int(xml_data['size']['heihgt']), int(xml_data['size']['width'])]
             if 0 in size:
                 print('Warrning: {} size error: {}'.format(xml_path, size))
