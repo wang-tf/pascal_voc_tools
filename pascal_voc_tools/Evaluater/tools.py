@@ -9,6 +9,8 @@
 '''
 
 # here put the import lib
+import os
+import glob
 import numpy as np
 
 
@@ -102,11 +104,11 @@ def voc_eval(class_recs, detect, iou_thresh=0.5, use_07_metric=False):
 
     precision = tp / (tp + fp)
     recall = tp / (tp + fn)
-    
+
     Arguments:
     ==========
         class_recalls: recalls dict of a class
-            class_recs[image_name]={'bbox': [], 'difficult': []}.
+            class_recs[image_name]={'bbox': []}.
         detection: Path to annotations
             detection={'image_ids':[], bbox': [], 'confidence':[]}.
         [iou_thresh]: Overlap threshold (default = 0.5)
@@ -180,6 +182,39 @@ def voc_eval(class_recs, detect, iou_thresh=0.5, use_07_metric=False):
     result['average_precision'] = average_precision
     return result
 
+
+def voc_eval_files(class_recs_dir, detect_file, label_id, iou_thresh=0.5, use_07_metric=False):
+    assert os.path.exists(class_recs_dir), class_recs_dir
+    assert os.path.exists(detect_file), detect_file
+
+    class_recs = {}
+    recs_list = glob.glob(os.path.join(class_recs_dir, '*.txt'))
+    for path in recs_list:
+        image_id = os.path.basename(path)[:-4]
+        with open(path) as f:
+            data = f.read().strip().split('\n')
+            bboxes = []
+            for line in data:
+                label, xmin, ymin, xmax, ymax = line.strip().split(' ')
+                if label == str(label_id):
+                    bboxes.append([xmin, ymin, xmax, ymax])
+            bboxes = np.array(bboxes)
+            class_recs[image_id] = {'bbox':bboxes}
+
+    detection = {'image_ids':[], 'bbox':[], 'confidence':[]}
+    with open(detect_file) as f:
+        data = f.read().strip().split('\n')
+        for line in data:
+            image_id, confidence, xmin, ymin, xmax, ymax = line.strip().split()
+            detection['image_ids'].append(image_id)
+            detection['confidence'].append(confidence)
+            detection['bbox'].append([xmin, ymin, xmax, ymax])
+    detection['image_ids'] = np.array(detection['image_ids'])
+    detection['confidence'] = np.array(detection['confidence'])
+    detection['bbox'] = np.array(detection['bbox'])
+    
+    result = voc_eval(class_recs, detection, iou_thresh=0.5, use_07_metric=False)
+    return result
 
 # class EvaluatTools():
 #     def __init__(self):
