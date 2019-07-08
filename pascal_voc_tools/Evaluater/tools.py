@@ -13,10 +13,13 @@ import numpy as np
 
 
 def voc_ap(recall, precision, use_07_metric=False):
-    """ ap = voc_ap(recall, precision, [use_07_metric])
+    """ 
+    ap = voc_ap(recall, precision, [use_07_metric])
+
     Compute VOC AP given precision and recall.
     If use_07_metric is true, uses  the
     VOC 07 11 point method (default: False).
+    Please make shure that recall and precison are sorted by scores.
 
     Arguments:
     ==========
@@ -55,66 +58,77 @@ def voc_ap(recall, precision, use_07_metric=False):
     return ap
 
 
-def compute_overlaps(BBGT, bb):
-    """compute intersection over union of ndarray.
+def compute_overlaps(boxes, one_box):
+    """
+    iou = compute_overlaps(boxes, one_box)
+
+    compute intersection over union of ndarray.
+    The format of one_box is [xmin, ymin, xmax, ymax].
 
     Arguments:
     ==========
-        BBGT: the (n, 4) shape ndarray, ground truth boundboxes;
-        bb: the (n, 4) shape ndarray, detected boundboxes;
+        boxes: the (n, 4) shape ndarray, ground truth boundboxes;
+        bb: the (4,) shape ndarray, detected boundboxes;
     Return:
     =======
         a (n, ) shape ndarray.
     """
     # compute overlaps
     # intersection
-    ixmin = np.maximum(BBGT[:, 0], bb[0])
-    iymin = np.maximum(BBGT[:, 1], bb[1])
-    ixmax = np.minimum(BBGT[:, 2], bb[2])
-    iymax = np.minimum(BBGT[:, 3], bb[3])
+    ixmin = np.maximum(boxes[:, 0], one_box[0])
+    iymin = np.maximum(boxes[:, 1], one_box[1])
+    ixmax = np.minimum(boxes[:, 2], one_box[2])
+    iymax = np.minimum(boxes[:, 3], one_box[3])
     iw = np.maximum(ixmax - ixmin + 1., 0.)
     ih = np.maximum(iymax - iymin + 1., 0.)
     inters = iw * ih
 
     # union
-    BBGT_area = (BBGT[:, 2] - BBGT[:, 0] + 1.) * (BBGT[:, 3] - BBGT[:, 1] + 1.)
-    bb_area = (bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.)
-    iou = inters / (bb_area + BBGT_area - inters)
+    boxes_area = (boxes[:, 2] - boxes[:, 0] + 1.) * (boxes[:, 3] - boxes[:, 1] + 1.)
+    one_box_area = (one_box[2] - one_box[0] + 1.) * (one_box[3] - one_box[1] + 1.)
+    iou = inters / (one_box_area + boxes_area - inters)
 
     return iou
 
 
-def voc_eval(class_recs, detect, ovthresh=0.5, use_07_metric=False):
-    """rec, prec, ap = voc_eval(class_recs, detect,
-                                [ovthresh],
+def voc_eval(class_recs, detect, iou_thresh=0.5, use_07_metric=False):
+    """
+    recall, precision, ap = voc_eval(class_recs, detection,
+                                [iou_thresh],
                                 [use_07_metric])
 
     Top level function that does the PASCAL VOC evaluation.
+    Please make sure that the class_recs only have one class annotations.
 
-    class_recs: recs dict of a class
-        class_recs[image_name]={'bbox': [], 'difficult': []}.
-    detect: Path to annotations
-        detect={'image_ids':[], bbox': [], 'confidence':[]}.
-    [ovthresh]: Overlap threshold (default = 0.5)
-    [use_07_metric]: Whether to use VOC07's 11 point AP computation
-        (default False)
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+    
+    Arguments:
+    ==========
+        class_recalls: recalls dict of a class
+            class_recs[image_name]={'bbox': [], 'difficult': []}.
+        detection: Path to annotations
+            detection={'image_ids':[], bbox': [], 'confidence':[]}.
+        [iou_thresh]: Overlap threshold (default = 0.5)
+        [use_07_metric]: Whether to use VOC07's 11 point AP computation
+            (default False)
+    Return:
+    =======
+        a dict of result including true_positive_number, false_positive_number,
+        recall, precision and average_precision.
     """
     # format data
+    # class_rec data load
     npos = 0
     for imagename in class_recs.keys():
         assert isinstance(class_recs[imagename]['bbox'], np.ndarray)
-        assert isinstance(class_recs[imagename]['difficult'], np.ndarray)
 
-        if use_difficult:
-            npos += np.sum(np.logical_not(class_recs[imagename]['difficult']))
-        else:
-            npos += class_recs[imagename]['difficult'].shape[0]
-        det = [False] * class_recs[imagename]['difficult'].shape[0]
-        class_recs[imagename]['det'] = det
-
+        npos += class_recs[imagename]['bbox'].shape[0]
+        class_recs[imagename]['det'] = [False] * class_recs[imagename]['bbox'].shape[0]
+    # detections data load
     image_ids = detect['image_ids']
     confidence = detect['confidence']
-    BB = detect['BB']
+    BB = detect['bbox']
     assert isinstance(confidence, np.ndarray)
     assert isinstance(BB, np.ndarray)
 
@@ -130,53 +144,41 @@ def voc_eval(class_recs, detect, ovthresh=0.5, use_07_metric=False):
     for d in range(nd):
         R = class_recs[image_ids[d]]
         bb = BB[d, :].astype(float)
-        ovmax = -np.inf
+        iou_max = -np.inf
         BBGT = R['bbox'].astype(float)
 
         if BBGT.size > 0:
             overlaps = compute_overlaps(BBGT, bb)
-            ovmax = np.max(overlaps)
-            jmax = np.argmax(overlaps)
+            iou_max = np.max(overlaps)
+            iou_max_index = np.argmax(overlaps)
 
-        if ovmax > ovthresh:
-            if (use_difficult and not R['difficult'][jmax]) or (not use_difficult):
-                if not R['det'][jmax]:
-                    tp[d] = 1.
-                    R['det'][jmax] = 1
-                else:
-                    fp[d] = 1.
+        if iou_max > iou_thresh:
+            if not R['det'][iou_max_index]:
+                tp[d] = 1.
+                R['det'][iou_max_index] = 1
+            else:
+                fp[d] = 1.
         else:
             fp[d] = 1.
 
     # compute precision recall
     fp = np.cumsum(fp)
     tp = np.cumsum(tp)
-    rec = tp / float(npos)
-    # avoid divide by zero in case the first detection matches a difficult
-    # ground truth
-    prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)
-    ap = voc_ap(rec, prec, use_07_metric)
+    true_positive_number = tp[-1]
+    false_positive_number = fp[-1]
 
-    return rec, prec, ap
+    recall = tp / float(npos)
+    # avoid divide by zero in case the first detection matches a difficult ground truth
+    precision = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)
+    average_precision = voc_ap(recall, precision, use_07_metric)
 
-
-# def parse_rec(filename):
-#     """Parse a PASCAL VOC xml file."""
-#     tree = ET.parse(filename)
-#     objects = []
-#     for obj in tree.findall('object'):
-#         obj_struct = {}
-#         obj_struct['name'] = obj.find('name').text
-#         obj_struct['pose'] = obj.find('pose').text
-#         obj_struct['truncated'] = int(obj.find('truncated').text)
-#         obj_struct['difficult'] = int(obj.find('difficult').text)
-#         bbox = obj.find('bndbox')
-#         obj_struct['bbox'] = [int(bbox.find('xmin').text),
-#                               int(bbox.find('ymin').text),
-#                               int(bbox.find('xmax').text),
-#                               int(bbox.find('ymax').text)]
-#         objects.append(obj_struct)
-#     return objects
+    result = {}
+    result['true_positive_number'] = true_positive_number
+    result['false_positive_number'] = false_positive_number
+    result['recall'] = recall
+    result['precision'] = precision
+    result['average_precision'] = average_precision
+    return result
 
 
 # class EvaluatTools():
