@@ -13,7 +13,7 @@ import numpy as np
 import cv2
 
 from ._xml_parser import XmlParser
-from .iou import bb_intersection_over_union as iou
+from .tools import bb_intersection_over_union as iou
 
 
 class SplitImageAnnotation():
