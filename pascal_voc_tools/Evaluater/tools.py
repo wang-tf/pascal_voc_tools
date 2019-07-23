@@ -1,12 +1,11 @@
-#!/usr/bin/env python3
 # -*- encoding: utf-8 -*-
-'''
+"""
 @File : tools.py
 @Time : 2019/03/04 08:35:46
 @Author : wangtf
 @Version : 1.0
 @Desc : None
-'''
+"""
 
 # here put the import lib
 import os
@@ -15,7 +14,7 @@ import numpy as np
 
 
 def voc_ap(recall, precision, use_07_metric=False):
-    """ 
+    """
     ap = voc_ap(recall, precision, [use_07_metric])
 
     Compute VOC AP given precision and recall.
@@ -23,13 +22,11 @@ def voc_ap(recall, precision, use_07_metric=False):
     VOC 07 11 point method (default: False).
     Please make shure that recall and precison are sorted by scores.
 
-    Arguments:
-    ==========
+    Args:
         recall: the shape of (n,) ndarray;
         precision: the shape of (n,) ndarray;
         use_07_metric: if true, the 11 points method will be used.
-    Return:
-    =======
+    Returns:
         the float number result of average precision.
     """
     if use_07_metric:
@@ -49,14 +46,14 @@ def voc_ap(recall, precision, use_07_metric=False):
 
         # compute the precision envelope
         for i in range(mpre.size - 1, 0, -1):
-            mpre[i-1] = np.maximum(mpre[i - 1], mpre[i])
+            mpre[i - 1] = np.maximum(mpre[i - 1], mpre[i])
 
         # to calculate area under PR curve, look for points
         # where X axis (recall) changes value
         i = np.where(mrec[1:] != mrec[:-1])[0]
 
         # and sum (\Delta recall) * prec
-        ap = np.sum((mrec[i+1] - mrec[i]) * mpre[i+1])
+        ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
     return ap
 
 
@@ -67,12 +64,10 @@ def compute_overlaps(boxes, one_box):
     compute intersection over union of ndarray.
     The format of one_box is [xmin, ymin, xmax, ymax].
 
-    Arguments:
-    ==========
+    Args:
         boxes: the (n, 4) shape ndarray, ground truth boundboxes;
         bb: the (4,) shape ndarray, detected boundboxes;
-    Return:
-    =======
+    Returns:
         a (n, ) shape ndarray.
     """
     # compute overlaps
@@ -86,14 +81,19 @@ def compute_overlaps(boxes, one_box):
     inters = iw * ih
 
     # union
-    boxes_area = (boxes[:, 2] - boxes[:, 0] + 1.) * (boxes[:, 3] - boxes[:, 1] + 1.)
-    one_box_area = (one_box[2] - one_box[0] + 1.) * (one_box[3] - one_box[1] + 1.)
+    boxes_area = (boxes[:, 2] - boxes[:, 0] + 1.) * (boxes[:, 3] -
+                                                     boxes[:, 1] + 1.)
+    one_box_area = (one_box[2] - one_box[0] + 1.) * (one_box[3] - one_box[1] +
+                                                     1.)
     iou = inters / (one_box_area + boxes_area - inters)
 
     return iou
 
 
-def voc_eval(class_recs, detect, iou_thresh=0.5, use_07_metric=False):
+def voc_eval(class_recs: dict,
+             detect: dict,
+             iou_thresh: float = 0.5,
+             use_07_metric: bool = False):
     """
     recall, precision, ap = voc_eval(class_recs, detection,
                                 [iou_thresh],
@@ -105,8 +105,7 @@ def voc_eval(class_recs, detect, iou_thresh=0.5, use_07_metric=False):
     precision = tp / (tp + fp)
     recall = tp / (tp + fn)
 
-    Arguments:
-    ==========
+    Args:
         class_recalls: recalls dict of a class
             class_recs[image_name]={'bbox': []}.
         detection: Path to annotations
@@ -114,25 +113,30 @@ def voc_eval(class_recs, detect, iou_thresh=0.5, use_07_metric=False):
         [iou_thresh]: Overlap threshold (default = 0.5)
         [use_07_metric]: Whether to use VOC07's 11 point AP computation
             (default False)
-    Return:
-    =======
+    Returns:
         a dict of result including true_positive_number, false_positive_number,
         recall, precision and average_precision.
+    Raises:
+        TypeError: the data format is not np.ndarray.
     """
     # format data
     # class_rec data load
     npos = 0
     for imagename in class_recs.keys():
-        assert isinstance(class_recs[imagename]['bbox'], np.ndarray)
+        if not isinstance(class_recs[imagename]['bbox'], np.ndarray):
+            raise TypeError
+        detected_num = class_recs[imagename]['bbox'].shape[0]
+        npos += detected_num
+        class_recs[imagename]['det'] = [False] * detected_num
 
-        npos += class_recs[imagename]['bbox'].shape[0]
-        class_recs[imagename]['det'] = [False] * class_recs[imagename]['bbox'].shape[0]
     # detections data load
     image_ids = detect['image_ids']
     confidence = detect['confidence']
     BB = detect['bbox']
-    assert isinstance(confidence, np.ndarray)
-    assert isinstance(BB, np.ndarray)
+    if not isinstance(confidence, np.ndarray):
+        raise TypeError
+    if not isinstance(BB, np.ndarray):
+        raise TypeError
 
     # sort by confidence
     sorted_ind = np.argsort(-confidence)
@@ -183,9 +187,40 @@ def voc_eval(class_recs, detect, iou_thresh=0.5, use_07_metric=False):
     return result
 
 
-def voc_eval_files(class_recs_dir, detect_file, label_id, iou_thresh=0.5, use_07_metric=False):
-    assert os.path.exists(class_recs_dir), class_recs_dir
-    assert os.path.exists(detect_file), detect_file
+def voc_eval_files(class_recs_dir,
+                   detect_file,
+                   label_id,
+                   iou_thresh=0.5,
+                   use_07_metric=False):
+    """
+    recall, precision, ap = voc_eval(class_recs, detection,
+                                [iou_thresh],
+                                [use_07_metric])
+
+    Top level function that does the PASCAL VOC evaluation.
+    Please make sure that the class_recs only have one class annotations.
+
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+
+    Args:
+        class_recalls: recalls dict of a class
+            class_recs[image_name]={'bbox': []}.
+        detection: Path to annotations
+            detection={'image_ids':[], bbox': [], 'confidence':[]}.
+        [iou_thresh]: Overlap threshold (default = 0.5)
+        [use_07_metric]: Whether to use VOC07's 11 point AP computation
+            (default False)
+    Returns:
+        a dict of result including true_positive_number, false_positive_number,
+        recall, precision and average_precision.
+    Raises:
+        IOError: can not find the path.
+    """
+    if not os.path.exists(class_recs_dir):
+        raise IOError
+    if not os.path.exists(detect_file):
+        raise IOError
 
     class_recs = {}
     recs_list = glob.glob(os.path.join(class_recs_dir, '*.txt'))
@@ -199,9 +234,9 @@ def voc_eval_files(class_recs_dir, detect_file, label_id, iou_thresh=0.5, use_07
                 if label == str(label_id):
                     bboxes.append([xmin, ymin, xmax, ymax])
             bboxes = np.array(bboxes)
-            class_recs[image_id] = {'bbox':bboxes}
+            class_recs[image_id] = {'bbox': bboxes}
 
-    detection = {'image_ids':[], 'bbox':[], 'confidence':[]}
+    detection = {'image_ids': [], 'bbox': [], 'confidence': []}
     with open(detect_file) as f:
         data = f.read().strip().split('\n')
         for line in data:
@@ -212,32 +247,9 @@ def voc_eval_files(class_recs_dir, detect_file, label_id, iou_thresh=0.5, use_07
     detection['image_ids'] = np.array(detection['image_ids'])
     detection['confidence'] = np.array(detection['confidence'])
     detection['bbox'] = np.array(detection['bbox'])
-    
-    result = voc_eval(class_recs, detection, iou_thresh=0.5, use_07_metric=False)
+
+    result = voc_eval(class_recs,
+                      detection,
+                      iou_thresh=iou_thresh,
+                      use_07_metric=use_07_metric)
     return result
-
-# class EvaluatTools():
-#     def __init__(self):
-
-#     def get_recs():
-#         recs = {}
-#         for i, imagename in enumerate(imagenames):
-#             recs[imagename] = parse_rec(annopath.format(imagename))
-
-#     # extract gt objects for this class
-#     class_recs = {}
-#     for imagename in recs.keys():
-#         R = [obj for obj in recs[imagename] if obj['name'] == classname]
-#         bbox = np.array([x['bbox'] for x in R])
-#         difficult = np.array([x['difficult'] for x in R]).astype(np.bool)
-#         class_recs[imagename] = {'bbox': bbox, 'difficult': difficult,}
-
-#     # read dets
-#     with open(detpath.format(classname), 'r') as f:
-#         lines = f.readlines()
-#         splitlines = [x.strip().split(' ') for x in lines]
-
-#     detect = {}
-#     detect['image_ids'] = [x[0] for x in splitlines]
-#     detect['confidence'] = np.array([float(x[1]) for x in splitlines])
-#     detect['BB'] = np.array([[float(z) for z in x[2:]] for x in splitlines])
