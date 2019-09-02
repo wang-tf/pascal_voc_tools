@@ -47,7 +47,7 @@ class DatasetResize():
         annotations_file_list = glob.glob(os.path.join(self.annotations_dir, '*.xml'))
         return annotations_file_list
 
-    def resize_tuple_by_rate(self, rate, image_path, xml_path, save_image_path=None, save_xml_path=None):
+    def resize_tuple_by_rate(self, rate, image_path, xml_path, save_image_path=None, save_xml_path=None, min_obj_size=8):
         """Resize a image and coresponding xml
         Arguments:
         ==========
@@ -193,7 +193,7 @@ class DatasetResize():
         parser.save(save_xml_path, xml_data)
         return
 
-    def resize_dataset_by_rate(self, rate):
+    def resize_dataset_by_rate(self, rate, min_obj_size=8):
         """Resize the whole dataset
         Arguments:
         ==========
@@ -207,7 +207,7 @@ class DatasetResize():
             save_xml_path = self.get_save_path(xml_path)
             save_image_path = self.get_save_path(image_path)
 
-            self.resize_tuple_by_rate(rate, image_path, xml_path, save_image_path, save_xml_path)
+            self.resize_tuple_by_rate(rate, image_path, xml_path, save_image_path, save_xml_path, min_obj_size=min_obj_size)
 
     def resize_dataset_by_min_size(self, min_size):
         annotations_file_list = self.get_annotations()
