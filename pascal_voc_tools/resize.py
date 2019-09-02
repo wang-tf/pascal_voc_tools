@@ -81,8 +81,8 @@ class DatasetResize():
         horizion_bias = 0
         vertical_bias = 0
 
-        xml_data['size']['width'] = width
-        xml_data['size']['height'] = height
+        xml_data['size']['width'] = new_width
+        xml_data['size']['height'] = new_height
 
         new_objs = []
         for index, obj in enumerate(xml_data['object']):
