@@ -69,8 +69,43 @@ class DatasetResize():
         cv2.imwrite(save_image_path, image_resized)
 
         # resize annotation and save
-        xml_file = XmlParser().load(xml_path)
-        xml_file.set_object_bndbox(rate, save_path=save_xml_path)
+        parser = XmlParser()
+        xml_data = parser.load(xml_path)
+        
+        original_width = int(xml_data['size']['width'])
+        original_height = int(xml_data['size']['height'])
+
+        new_width = int(original_width * rate)
+        new_height = int(original_height * rate)
+
+        horizion_bias = 0
+        vertical_bias = 0
+
+        xml_data['size']['width'] = width
+        xml_data['size']['height'] = height
+
+        new_objs = []
+        for index, obj in enumerate(xml_data['object']):
+            xmin = int(float(obj['bndbox']['xmin']))
+            ymin = int(float(obj['bndbox']['ymin']))
+            xmax = int(float(obj['bndbox']['xmax']))
+            ymax = int(float(obj['bndbox']['ymax']))
+            
+            new_bndbox = self.resize_bbox(rate, horizion_bias, vertical_bias, [xmin, ymin, xmax, ymax])
+            new_bndbox = list(map(int, new_bndbox))
+            xmin, ymin, xmax, ymax = new_bndbox
+            if xmax - xmin < min_obj_size or ymax - ymin < min_obj_size:
+                print(f'The new size of {xmin}, {ymin}, {xmax}, {ymax} is smaler than {min_obj_size}*{min_obj_size}. delete')
+                continue
+            xml_data['object'][index]['bndbox']['xmin'] = str(xmin)
+            xml_data['object'][index]['bndbox']['ymin'] = str(ymin)
+            xml_data['object'][index]['bndbox']['xmax'] = str(xmax)
+            xml_data['object'][index]['bndbox']['ymax'] = str(ymax)
+            new_objs.append(xml_data['object'][index])
+        xml_data['object'] = new_objs
+
+        save_xml_path = xml_path if save_xml_path is None else save_xml_path
+        parser.save(save_xml_path, xml_data)
         return 1
 
     def resize_tuple_by_min_size(self, min_size, image_path, xml_path, save_image_path=None, save_xml_path=None):
@@ -119,7 +154,6 @@ class DatasetResize():
     
     def resize_xml_by_size(self, xml_path, width, height, save_xml_path=None, min_obj_size=8):
         parser = XmlParser()
-        print(xml_path)
         xml_data = parser.load(xml_path)
         
         original_width = int(xml_data['size']['width'])
