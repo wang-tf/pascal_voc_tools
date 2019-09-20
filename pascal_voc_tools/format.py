@@ -9,8 +9,8 @@ import tqdm
 def check_devkit_format(root_dir):
     """
     Check file tree format in Devkit dir.
-    Arguments:
-    =========
+
+    Args:
         root_dir:, str, including some VOC**** dir.
     """
     check_result = False
@@ -28,8 +28,8 @@ def check_devkit_format(root_dir):
 def check_voc_format(voc_path):
     """
     Check file tree format in VOC dir like VOC2007.
-    Arguments:
-    =========
+
+    Args:
         voc_path: str, the dir path should including Annotations and JPEGImages.
     """
     check_result = True
@@ -52,8 +52,8 @@ def check_voc_format(voc_path):
 def gen_voc_format(ann_dir, jpeg_dir, save_dir):
     """
     Generate a new format pascal voc data.
-    Arguments:
-    =========
+
+    Args:
         ann_dir: str, the path having xmls;
         jpeg_dir: str, the path having images;
         save_dir: str, the path saving file.

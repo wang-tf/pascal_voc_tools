@@ -11,11 +11,10 @@ except ImportError:
 
 def verify_image(jpeg_path):
     """Verify image format.
-    Arguments:
-    =========
+    Args:
         jpeg_path: str, the image path.
-    Return:
-    ======
+
+    Returns:
         result: bool, if image ok, True will return.
     """
     assert os.path.exists(jpeg_path), jpeg_path
@@ -29,8 +28,7 @@ def verify_image(jpeg_path):
 def check_jpg_xml_match(xml_dir, jpeg_dir):
     """
     Check matching degree about xml files and jpeg files.
-    Arguments:
-    =========
+    Args:
         xml_dir: str, the dir including xml files;
         jpeg_dir: str, the dir including jpeg files.
     """
@@ -61,8 +59,7 @@ def check_jpg_xml_match(xml_dir, jpeg_dir):
 def check_image_format(jpeg_dir):
     """
     Change image format from others to jpg.
-    Arguments:
-    =========
+    Args:
         jpeg_dir: str, the dir only have image.
     """
     image_path_list = glob.glob(os.path.join(jpeg_dir, '*.*'))
@@ -80,8 +77,7 @@ def check_image_format(jpeg_dir):
 
 def check_xml_info(xml_info):
     """
-    Arguments:
-    ==========
+    Args:
         xml_info: dict, including xml data. 
     """
     # check image path

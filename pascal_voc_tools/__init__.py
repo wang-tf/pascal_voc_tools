@@ -1,6 +1,5 @@
 """
 Pascal Voc Tools
-===============
 
 This package provide some tools using for 
 pascal voc format dataset and some usrful

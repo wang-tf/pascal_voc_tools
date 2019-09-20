@@ -1,10 +1,11 @@
 #!/usr/bin/evn python
 # -*- coding:utf-8 -*-
 """
-@File: _xml_parser.py
-@Author: ternencewang
-@Desc: decode xml file of Pascal Voc annotation
+File: _xml_parser.py
+Author: ternencewang
+Desc: decode xml file of Pascal Voc annotation
          write a xml file about pascal voc annotation.
+
 <annotation>
     <folder>{{ folder }}</folder>
     <filename>{{ filename }}</filename>

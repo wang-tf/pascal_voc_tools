@@ -14,13 +14,11 @@ __DEBUG__ = False
 
 def _width_and_height_iou(x, centroids):
     """
-    Arguments:
-    ==========
+    Args:
         x: 某一个ground truth的w,h;
         centroids: anchor的w,h的集合[(w,h),(),...]，共k个;
 
-    Return:
-    =======
+    Returns:
         单个ground truth box与所有k个anchor box的IoU值集合;
     """
     IoUs = []
@@ -41,13 +39,11 @@ def _width_and_height_iou(x, centroids):
 
 def _avg_IOU(X, centroids):
     '''
-    Arguments:
-    ==========
+    Args:
         X: ground truth的w,h的集合[(w,h),(),...]
         centroids: anchor的w,h的集合[(w,h),(),...]，共k个
 
-    Return:
-    =======
+    Returns:
         centroids与ground truth 的平均iou
     '''
     n, d = X.shape
@@ -61,14 +57,12 @@ def _avg_IOU(X, centroids):
 def _write_anchors_to_file(anchors, X, anchor_file):
     '''
 
-    Arguments:
-    ==========
+    Args:
         centroids: anchor的w,h的集合[(w,h),(),...]，共k个
         X: ground truth的w,h的集合[(w,h),(),...]
         anchor_file: anchor和平均IoU的输出路径
 
-    Return:
-    =======
+    Returns:
         anchors: saved anchors.
     '''
     with open(anchor_file, 'w') as f:
@@ -83,8 +77,7 @@ def _write_anchors_to_file(anchors, X, anchor_file):
 def _kmeans(ground_truth_list, centroids):
     """以长宽的iou作为距离度量，以centroids为质心聚类
 
-    Arguments:
-    ==========
+    Args:
         ground_truth_list: 所有ground truth的长宽
         centroids: 初始化的质心
 
@@ -144,7 +137,6 @@ class AnchorsKMeans():
         """like 2007_train.txt, data fromat must have labels
 
         Arguments:
-        ==========
             filelist: path to filelist;
 
         """
@@ -164,14 +156,12 @@ class AnchorsKMeans():
 
     def calculate(self, num_clusters, yolo_input_shape, yolo_version='yolov3'):
         """
-        Arguments:
-        ==========
+        Args:
             num_clusters: number of clusters;
             yolo_version: default='yolov3', yolov2 or yolov3;
             yolo_input_shape: input images shape，multiples of 32. etc. 416*416;
 
-        Return:
-        =======
+        Returns:
             anchors
 
         """

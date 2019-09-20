@@ -49,8 +49,8 @@ class DatasetResize():
 
     def resize_tuple_by_rate(self, rate, image_path, xml_path, save_image_path=None, save_xml_path=None, min_obj_size=8):
         """Resize a image and coresponding xml
-        Arguments:
-        ==========
+
+        Args:
             rate: float or int, scale size.
             image_path: str, the path of image.
             xml_path: str, the path of xml file.
@@ -195,8 +195,8 @@ class DatasetResize():
 
     def resize_dataset_by_rate(self, rate, min_obj_size=8):
         """Resize the whole dataset
-        Arguments:
-        ==========
+
+        Args:
             rate: float or int, scale size.
         """
         annotations_file_list = self.get_annotations()
@@ -245,8 +245,8 @@ class DatasetResize():
 
     def copy_imagesets(self, imagesets_dir=None):
         """Copy some text file in Main dir from root dir to save dir
-        Arguments:
-        ==========
+
+        Args:
             images_dir: str, the path of ImageSets/Main.
         """
         if imagesets_dir is None:

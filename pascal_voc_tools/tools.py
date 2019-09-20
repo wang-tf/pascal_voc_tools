@@ -8,12 +8,10 @@ import cv2
 def bb_intersection_over_union(boxA, boxB):
     """calculate intersection over union between two boundboxes.
 
-    Arguments:
-    ==========
+    Args:
         boxA: list of xmin, ymin, xmax, ymax;
         boxB: list of xmin, ymin, xmax, ymax;
-    Return:
-    =======
+    Returns:
         a float number of iou between two inputs.
     """
     # determine the (x, y)-coordinates of the intersection rectangle
