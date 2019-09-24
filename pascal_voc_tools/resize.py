@@ -1,12 +1,6 @@
-#!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-
 """
-@File: datasetresize.py
-@Time: 2019-01-10 19:05:00
-@Author: wangtf
-@Version: 1.0
-@Dest: resize the whole dataset
+Resize the whole dataset including images and xmls
 """
 
 import os
@@ -20,11 +14,14 @@ from .tools import resize_image_by_size
 
 
 class DatasetResize():
+    """Resize voc dataset.
+
+    Attributes:
+        root_voc_dir: str, the path of pascal voc dir include VOC2007.
+        save_root_dir: str, the path of save path, default path is input path.
+    """
     def __init__(self, root_voc_dir, save_root_dir=None):
-        """
-        Args:
-            root_voc_dir: str, the path of pascal voc dir include VOC2007.
-            save_root_dir: str, the path of save path, default path is input path.
+        """set save path
         """
         self.root_dir = root_voc_dir
         self.save_root_dir = self.root_dir if save_root_dir is None else save_root_dir
@@ -43,12 +40,12 @@ class DatasetResize():
         if not os.path.exists(self.save_images_dir):
             os.makedirs(self.save_images_dir)
 
-    def get_annotations(self):
+    def _get_annotations(self):
         annotations_file_list = glob.glob(os.path.join(self.annotations_dir, '*.xml'))
         return annotations_file_list
 
     def resize_tuple_by_rate(self, rate, image_path, xml_path, save_image_path=None, save_xml_path=None, min_obj_size=8):
-        """Resize a image and coresponding xml
+        """Resize a image and coresponding xml by rate
 
         Args:
             rate: float or int, scale size.
@@ -109,6 +106,15 @@ class DatasetResize():
         return 1
 
     def resize_tuple_by_min_size(self, min_size, image_path, xml_path, save_image_path=None, save_xml_path=None):
+        """Resize a image and coresponding xml by set min size and keep aspect ratio
+
+        Args:
+            min_size: int, new image min size;
+            image_path: str, image path;
+            xml_path: str, xml file about image;
+            save_image_path: str, save image path;
+            save_xml_path: str, save xml path.
+        """
         assert os.path.exists(image_path), image_path
         assert os.path.exists(xml_path), xml_path
 
@@ -124,6 +130,16 @@ class DatasetResize():
         self.resize_tuple_by_rate(rate, image_path, xml_path, save_image_path, save_xml_path)
 
     def resize_tuple_by_size(self, width, height, image_path, xml_path, save_image_path=None, save_xml_path=None, min_obj_size=8):
+        """Resize a image and coresponding xml by set fix size
+
+        Args:
+            width: int, new image width;
+            height: int, new image height;
+            image_path: str, image path;
+            xml_path: str, xml file about image;
+            save_image_path: str, save image path;
+            save_xml_path: str, save xml path.
+        """
         assert os.path.exists(image_path), image_path
         assert os.path.exists(xml_path), xml_path
 
@@ -135,6 +151,14 @@ class DatasetResize():
         return
     
     def resize_image_by_size(self, image_path, width, height, save_image_path=None):
+        """Resize an image
+
+        Args:
+            image_path: str, image path;
+            width: int, new image width;
+            height: intn new image height;
+            save_image_path: image save path.
+        """
         assert os.path.exists(image_path), image_path
 
         image = cv2.imread(image_path)
@@ -145,6 +169,16 @@ class DatasetResize():
         return
 
     def resize_bbox(self, rate, horizion_bias, vertical_bias, bbox):
+        """resize a bbox
+
+        Args:
+            rate: box change rate;
+            horizion_bias: xmin and xmax will add it;
+            vertical_bias: ymin and ymax will add it,
+            bbox: list, [xmin, ymin, xmax, ymax].
+        Returns:
+            new bbox list
+        """
         xmin, ymin, xmax, ymax = bbox
         xmin = xmin * rate + horizion_bias
         ymin = ymin * rate + vertical_bias
@@ -153,6 +187,14 @@ class DatasetResize():
         return [xmin, ymin, xmax, ymax]
     
     def resize_xml_by_size(self, xml_path, width, height, save_xml_path=None, min_obj_size=8):
+        """
+        Args:
+            xml_path: str, xml file path;
+            width: int, new image width;
+            height: int, new image height;
+            save_xml_path: str, save path;
+            min_obj_size: int, if resized bbox smaller than it will be pass.
+        """
         parser = XmlParser()
         xml_data = parser.load(xml_path)
         
@@ -193,13 +235,13 @@ class DatasetResize():
         parser.save(save_xml_path, xml_data)
         return
 
-    def resize_dataset_by_rate(self, rate, min_obj_size=8):
+    def resize_by_rate(self, rate, min_obj_size=8):
         """Resize the whole dataset
 
         Args:
             rate: float or int, scale size.
         """
-        annotations_file_list = self.get_annotations()
+        annotations_file_list = self._get_annotations()
         
         print('Resizing dataset ...')
         for xml_path in tqdm.tqdm(annotations_file_list):
@@ -209,8 +251,13 @@ class DatasetResize():
 
             self.resize_tuple_by_rate(rate, image_path, xml_path, save_image_path, save_xml_path, min_obj_size=min_obj_size)
 
-    def resize_dataset_by_min_size(self, min_size):
-        annotations_file_list = self.get_annotations()
+    def resize_by_min_size(self, min_size):
+        """Resize whole dataset by set a min image size.
+
+        Args:
+            min_size: int, new image min size.
+        """
+        annotations_file_list = self._get_annotations()
     
         print('Resizing dataset ...')
         for xml_path in tqdm.tqdm(annotations_file_list):
@@ -220,8 +267,14 @@ class DatasetResize():
 
             self.resize_tuple_by_min_size(min_size, image_path, xml_path, save_image_path, save_xml_path)
 
-    def resize_dataset_by_size(self, width, height, min_obj_size=8):
-        annotations_file_list = self.get_annotations()
+    def resize_by_size(self, width, height, min_obj_size=8):
+        """Resize whole dataset by set a fix image size.
+
+        Args:
+            width: int, new image width;
+            height: intn new image height.
+        """
+        annotations_file_list = self._get_annotations()
     
         print('Resizing dataset ...')
         for xml_path in tqdm.tqdm(annotations_file_list):
@@ -233,12 +286,28 @@ class DatasetResize():
         return
 
     def get_save_path(self, path):
+        """return new xml save path
+
+        Args:
+            path: str, xml path.
+
+        Returns:
+            new xml path
+        """
         name = os.path.basename(path)
         save_dir = self.save_annotations_dir if name[-4:] == '.xml' else self.save_images_dir
         save_path = os.path.join(save_dir, name)
         return save_path
         
     def get_image_path_by_xml_path(self, xml_path):
+        """using xml path to inference image path
+
+        Args:
+            xml_path: str, xml file path.
+        
+        Returns:
+            image path in current dataset.
+        """
         xml_name = os.path.basename(xml_path)
         image_path = os.path.join(self.images_dir, xml_name.replace('.xml', '.jpg'))
         return image_path
@@ -264,18 +333,3 @@ class DatasetResize():
             else:
                 print('Can not find path: {}'.format(file_path))
 
-
-def test():
-    root_dir = '/diskb/GlodonDataset/SteelPipe/SteelPipe_raw-20190806/VOC-20190929/VOC2007'
-    save_root_dir = '/diskb/GlodonDataset/SteelPipe/SteelPipe_raw-20190806/VOC-20190929/VOC2007-test'
-    # min_size = 2000
-    width = 608
-    height = 608
-    resizer = DatasetResize(root_dir, save_root_dir)
-    # resizer.resize_dataset_by_min_size(min_size)
-    resizer.resize_dataset_by_size(width, height)
-    resizer.copy_imagesets()
-
-
-if __name__ == '__main__':
-    test()

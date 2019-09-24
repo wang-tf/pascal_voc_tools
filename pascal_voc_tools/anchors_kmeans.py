@@ -38,14 +38,14 @@ def _width_and_height_iou(x, centroids):
 
 
 def _avg_IOU(X, centroids):
-    '''
+    """
     Args:
         X: ground truth的w,h的集合[(w,h),(),...]
         centroids: anchor的w,h的集合[(w,h),(),...]，共k个
 
     Returns:
         centroids与ground truth 的平均iou
-    '''
+    """
     n, d = X.shape
     sum = 0.
     for i in range(X.shape[0]):
@@ -55,7 +55,7 @@ def _avg_IOU(X, centroids):
 
 
 def _write_anchors_to_file(anchors, X, anchor_file):
-    '''
+    """
 
     Args:
         centroids: anchor的w,h的集合[(w,h),(),...]，共k个
@@ -64,7 +64,7 @@ def _write_anchors_to_file(anchors, X, anchor_file):
 
     Returns:
         anchors: saved anchors.
-    '''
+    """
     with open(anchor_file, 'w') as f:
         anchors_str = []
         for i in len(anchors):
@@ -145,6 +145,11 @@ class AnchorsKMeans():
         self.ground_truth_list = None
 
     def save(self, output_dir):
+        """Save current anchors to a file
+
+        Args:
+            output_dir: str, a dir to save anchors file.
+        """
         # make sure the output_dir is exist.
         if not os.path.exists(output_dir):
             os.mkdir(output_dir)
@@ -212,13 +217,4 @@ class AnchorsKMeans():
         print('Anchors = ', anchors[sorted_indices])
         self.anchors = anchors[sorted_indices]
         return self.anchors
-
-
-def main():
-    kmeans = AnchorsKMeans('./data/VOCdevkit/2007_train.txt')
-    kmeans.calculate()
-
-
-if __name__ == "__main__":
-    main()
 

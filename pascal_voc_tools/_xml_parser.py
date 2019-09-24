@@ -1,38 +1,6 @@
-#!/usr/bin/evn python
 # -*- coding:utf-8 -*-
 """
-File: _xml_parser.py
-Author: ternencewang
-Desc: decode xml file of Pascal Voc annotation
-         write a xml file about pascal voc annotation.
-
-<annotation>
-    <folder>{{ folder }}</folder>
-    <filename>{{ filename }}</filename>
-    <path>{{ path }}</path>
-    <source>
-        <database>{{ database }}</database>
-    </source>
-    <size>
-        <width>{{ size.width }}</width>
-        <height>{{ size.height }}</height>
-        <depth>{{ size.depth }}</depth>
-    </size>
-    <segmented>{{ segmented }}</segmented>{% for obj in object %}
-    <object>
-        <name>{{ obj.name }}</name>
-        <pose>{{ obj.pose }}</pose>
-        <truncated>{{ obj.truncated }}</truncated>
-        <difficult>{{ obj.difficult }}</difficult>
-        <bndbox>
-            <xmin>{{ obj.bndbox.xmin }}</xmin>
-            <ymin>{{ obj.bndbox.ymin }}</ymin>
-            <xmax>{{ obj.bndbox.xmax }}</xmax>
-            <ymax>{{ obj.bndbox.ymax }}</ymax>
-        </bndbox>
-    </object>{% endfor %}
-</annotation>
-
+decode xml file of Pascal Voc annotation write a xml file about pascal voc annotation.
 """
 import os
 from jinja2 import Environment, PackageLoader
@@ -47,7 +15,6 @@ class XmlParser():
 
     def __init__(self):
         self.file_path = None
-        self.data = None
 
         self.template_parameters = {}
         environment = Environment(loader=PackageLoader('pascal_voc_tools',
@@ -59,6 +26,7 @@ class XmlParser():
 
     def load(self, xml_file_path):
         """Load a xml file data.
+
         Args:
             xml_file_path: str, the path of a xml file
         Returns:
@@ -69,8 +37,8 @@ class XmlParser():
         self.file_path = xml_file_path
         tree = ET.parse(self.file_path)
         root = tree.getroot()
-        self.data = self.parse_element(root)
-        return self.data
+        self.template_parameters = self.parse_element(root)
+        return self.template_parameters
 
     def replace_name(self, old_name, new_name):
         """Replace an object name.
@@ -79,12 +47,12 @@ class XmlParser():
             old_name: str, an object class name.
             new_name: str, a new object class name.
         Raises:
-            KeyError: if cannot find 'object' in self.data.
+            KeyError: if cannot find 'object' in self.template_parameters.
         """
-        if 'object' not in self.data:
+        if 'object' not in self.template_parameters:
             raise KeyError('Make shure you have loaded an xml file data.')
 
-        for obj in self.data['object']:
+        for obj in self.template_parameters['object']:
             if obj['name'] == old_name:
                 obj['name'] = new_name
 
@@ -130,7 +98,7 @@ class XmlParser():
 
         return save_dict
 
-    def set_data_head(self,
+    def set_head(self,
                       path='',
                       width=0,
                       height=0,
@@ -211,3 +179,4 @@ class XmlParser():
             content = self.annotation_template.render(
                 **self.template_parameters)
             xml_file.write(content)
+
