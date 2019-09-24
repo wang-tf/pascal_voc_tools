@@ -37,14 +37,6 @@ pascal\_voc\_tools.aspect\_ratios module
    :undoc-members:
    :show-inheritance:
 
-pascal\_voc\_tools.crop module
-------------------------------
-
-.. automodule:: pascal_voc_tools.crop
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 pascal\_voc\_tools.darknet\_config module
 -----------------------------------------
 
@@ -77,26 +69,10 @@ pascal\_voc\_tools.format module
    :undoc-members:
    :show-inheritance:
 
-pascal\_voc\_tools.generator module
------------------------------------
-
-.. automodule:: pascal_voc_tools.generator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 pascal\_voc\_tools.image\_annotation\_split module
 --------------------------------------------------
 
 .. automodule:: pascal_voc_tools.image_annotation_split
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pascal\_voc\_tools.pascal\_generator module
--------------------------------------------
-
-.. automodule:: pascal_voc_tools.pascal_generator
    :members:
    :undoc-members:
    :show-inheritance:
