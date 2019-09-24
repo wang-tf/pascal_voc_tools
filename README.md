@@ -9,3 +9,8 @@ This package includes some tools about pascal voc format dataset like read xml, 
 - dataset resize;
 - dataset argument(function from [link](https://github.com/Paperspace/DataAugmentationForObjectDetection));
 - darknet anchors k-means;
+
+# Install
+```bash
+pip install pascal-voc-tools
+```
