@@ -6,8 +6,6 @@
 Welcome to pascal-voc-tools's documentation!
 ============================================
 
-.. automodule:: pascal_voc_tools
-   :members:
 
 .. toctree::
    :maxdepth: 2

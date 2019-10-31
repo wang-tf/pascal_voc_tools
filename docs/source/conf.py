@@ -38,7 +38,12 @@ extensions = [
         'sphinx.ext.coverage',
         'sphinx.ext.napoleon',
         'sphinx.ext.napoleon',
+        'sphinxcontrib.apidoc',
 ]
+
+apidoc_module_dir = '../../pascal_voc_tools'
+#apidoc_output_dir = './'
+apidoc_excluded_paths = ['tests']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
