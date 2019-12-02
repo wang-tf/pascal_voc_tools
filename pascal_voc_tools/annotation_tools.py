@@ -1,10 +1,8 @@
-#!/usr/bin/env python3
 # -*- encoding: utf-8 -*-
 '''
 @File : annotation_tools.py
-@Time : 2019/03/01 11:14:56
+@Time : 2019/12/02 11:14:56
 @Author : wangtf
-@Version : 1.0
 @Desc : None
 '''
 
@@ -12,6 +10,7 @@
 import os
 import glob
 from ._xml_parser import XmlParser
+import matplotlib.pyplot as plt
 
 
 class AnnotationTools():
@@ -53,3 +52,34 @@ class AnnotationTools():
                 print('Warrning: {} size error: {}'.format(xml_path, size))
                 continue
             objects = xml_data['object']
+
+    def iou_analyse(self, save_dir='./'):
+        class_iou_map = {}
+        for xml in self.ann_list:
+            xml_data = XmlParser().load(xml)
+            width = int(xml['width'])
+            height = int(xml['height'])
+            image_area = width * height
+
+            for obj in xml_data['object']:
+                if obj['name'] not in class_iou_map:
+                    class_iou_map[obj['name']] = []
+
+                xmin = int(obj['bndbox']['xmin'])
+                ymin = int(obj['bndbox']['ymin'])
+                xmax = int(obj['bndbox']['xmax'])
+                ymax = int(obj['bndbox']['ymax'])
+                roi_area = (xmax - xmin) * (ymax - ymin)
+                class_iou_map[obj['name']].append(roi_area / image_area)
+        
+        # Divided into 100 servings from 0.0 to 1.0
+        for key, val in class_iou_map.items():
+            new_val = [int(n * 100) for n in val]
+            x = list(range(101))
+            y = [new_val.count(n) for n in x]
+            plt.figure(figsize=(8,4))
+            plt.plot(x,y,"b--",linewidth=1)
+            plt.xlabel("IOU(object area/image area) percent/%")
+            plt.ylabel("Times")
+            plt.title("The distribution of Objects' IOU in the dataset")
+            plt.savefig(os.path.join(save_dir, "IOU_distribution-{}.jpg".format(key)))

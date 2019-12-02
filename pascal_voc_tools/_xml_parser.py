@@ -38,6 +38,9 @@ class XmlParser():
         tree = ET.parse(self.file_path)
         root = tree.getroot()
         self.template_parameters = self.parse_element(root)
+        if 'object' not in self.template_parameters:
+            self.template_parameters['object'] = []
+
         return self.template_parameters
 
     def replace_name(self, old_name, new_name):
@@ -98,10 +101,7 @@ class XmlParser():
 
         return save_dict
 
-    def set_head(self,
-                      path='',
-                      width=0,
-                      height=0,
+    def set_head(self, path, width, height,
                       depth=3,
                       database='Unknown',
                       segmented=0):
