@@ -25,6 +25,7 @@ def check_devkit_format(root_dir):
                 return check_result
     return check_result
 
+
 def check_voc_format(voc_path):
     """
     Check file tree format in VOC dir like VOC2007.
@@ -36,7 +37,7 @@ def check_voc_format(voc_path):
     assert os.path.exists(voc_path), voc_path
     ann_dir = os.path.join(os.path.join(voc_path, 'Annotations'))
     jpeg_dir = os.path.join(os.path.join(voc_path, 'JPEGImages'))
-    
+
     if not os.path.exists(ann_dir):
         check_result = False
     if not os.path.exists(jpeg_dir):
@@ -48,6 +49,7 @@ def check_voc_format(voc_path):
         if not os.path.exists(main_dir):
             os.makedirs(main_dir)
     return check_result
+
 
 def gen_voc_format(ann_dir, jpeg_dir, save_dir):
     """
@@ -76,7 +78,9 @@ def gen_voc_format(ann_dir, jpeg_dir, save_dir):
     print('Find xml file number: {}'.format(len(xml_file_list)))
 
     for xml_file in tqdm.tqdm(xml_file_list):
-        jpeg_file = os.path.join(jpeg_dir, os.path.basename(xml_file).replace('.xml', '.jpg'))
+        jpeg_file = os.path.join(
+            jpeg_dir,
+            os.path.basename(xml_file).replace('.xml', '.jpg'))
         assert os.path.isfile(jpeg_file), jpeg_file
         shutil.copy2(jpeg_file, jpeg_save_dir)
         shutil.copy2(xml_file, ann_save_dir)

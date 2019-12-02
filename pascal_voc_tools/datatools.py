@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
-
+# -*- coding:utf-8 -*-
 """
 @File: datasplit.py
-@Time: 2019-01-11
+@Time: 2019-12-02
 @Author: ternencewang2015@outlook.com
 @Description:
 This script used to split pascal voc format dataset and generate
@@ -92,7 +91,11 @@ class DataSplit():
 
         return groups
 
-    def split_by_rate(self, test_rate, val_rate=0.0, name_list=None, shuffle=False):
+    def split_by_rate(self,
+                      test_rate,
+                      val_rate=0.0,
+                      name_list=None,
+                      shuffle=False):
         """
         Args:
             test_rate: float, the test data rate for all data;
@@ -108,8 +111,10 @@ class DataSplit():
         if name_list is None:
             name_list = self.useful_name_list
 
-        assert test_rate < 1, 'Error: test_rate {} not in range.'.format(test_rate)
-        assert len(name_list) > 2, 'Error: name_list length is needed more than 2.'
+        assert test_rate < 1, 'Error: test_rate {} not in range.'.format(
+            test_rate)
+        assert len(
+            name_list) > 2, 'Error: name_list length is needed more than 2.'
 
         if shuffle:
             random.shuffle(name_list)
@@ -125,16 +130,20 @@ class DataSplit():
 
         train_number = len(name_list) - test_number - val_number
         assert train_number > 0, 'Error: train_number is needed more than 0.'
-        
+
         train_list = name_list[0:train_number]
-        test_list = name_list[train_number:train_number+test_number]
+        test_list = name_list[train_number:train_number + test_number]
         if val_number > 0:
             val_list = name_list[-val_number:]
         else:
             val_list = []
         return {'train': train_list, 'val': val_list, 'test': test_list}
 
-    def split_group_by_rate(self, groups, test_rate, val_rate=0.0, shuffle=False):
+    def split_group_by_rate(self,
+                            groups,
+                            test_rate,
+                            val_rate=0.0,
+                            shuffle=False):
         """
         Args:
             groups: dict like {prefix: [name, ]}, grouped name list.
@@ -150,7 +159,8 @@ class DataSplit():
         for prefix in groups:
             if not groups[prefix]:
                 continue
-            split_result = self.split_by_rate(test_rate, val_rate,
+            split_result = self.split_by_rate(test_rate,
+                                              val_rate,
                                               name_list=groups[prefix],
                                               shuffle=shuffle)
             train_list = train_list + split_result['train']
@@ -171,24 +181,37 @@ class DataSplit():
             save_dir = self.txt_dir
 
         if 'trainval' not in split_name_dic:
-            split_name_dic['trainval'] = split_name_dic['train'] + split_name_dic['val']
+            split_name_dic[
+                'trainval'] = split_name_dic['train'] + split_name_dic['val']
 
         for key, val in split_name_dic.items():
-            with open(os.path.join(save_dir, key+'.txt'), 'w') as f:
+            with open(os.path.join(save_dir, key + '.txt'), 'w') as f:
                 f.write('\n'.join(val))
 
         return 0
 
 
 class DarknetDataset():
-    def __init__(self):
-        self.voc_sets = [('2007', 'train'), ('2007', 'val'), ('2007', 'test')]
-        self.classes = ["aeroplane", "bicycle", "bird", "boat", "bottle",
-                        "bus", "car", "cat", "chair", "cow", "diningtable",
-                        "dog", "horse", "motorbike", "person", "pottedplant",
-                        "sheep", "sofa", "train", "tvmonitor"]
+    """Convert PascalVOC dataset to darknet dataset.
+
+    Attributes:
+        voc_sets: list, like [('2007', 'train')]
+
+    """
+    def __init__(self, voc_sets=[('2007', 'train'), ('2007', 'val'), ('2007', 'test')]):
+        self.voc_sets = voc_sets
+        self.classes = [
+            "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car",
+            "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike",
+            "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"
+        ]
 
     def get_classes(self, voc_root_path):
+        """ read the file labels.list in voc_root_path
+
+        Args:
+            voc_root_path: str, like VOCdevkit.
+        """
         # The labels.list file mast be in voc_root_path dir.
         label_path = os.path.join(voc_root_path, 'labels.list')
         assert os.path.exists(label_path), label_path
@@ -201,23 +224,25 @@ class DarknetDataset():
         return self.classes
 
     def convert(self, size, box):
-        dw = 1./(size[0])
-        dh = 1./(size[1])
-        x = (box[0] + box[1])/2.0 - 1
-        y = (box[2] + box[3])/2.0 - 1
+        dw = 1. / (size[0])
+        dh = 1. / (size[1])
+        x = (box[0] + box[1]) / 2.0 - 1
+        y = (box[2] + box[3]) / 2.0 - 1
         w = box[1] - box[0]
         h = box[3] - box[2]
-        x = x*dw
-        w = w*dw
-        y = y*dh
-        h = h*dh
+        x = x * dw
+        w = w * dw
+        y = y * dh
+        h = h * dh
         return (x, y, w, h)
 
     def convert_annotation(self, year, image_id, voc_root_path):
-        in_file = open(os.path.join(
-            voc_root_path, 'VOC%s/Annotations/%s.xml' % (year, image_id)))
-        out_file = open(os.path.join(
-            voc_root_path, 'VOC%s/labels/%s.txt' % (year, image_id)), 'w')
+        in_file = open(
+            os.path.join(voc_root_path,
+                         'VOC%s/Annotations/%s.xml' % (year, image_id)))
+        out_file = open(
+            os.path.join(voc_root_path,
+                         'VOC%s/labels/%s.txt' % (year, image_id)), 'w')
         tree = ET.parse(in_file)
         root = tree.getroot()
         size = root.find('size')
@@ -231,30 +256,47 @@ class DarknetDataset():
                 continue
             cls_id = self.classes.index(cls)
             xmlbox = obj.find('bndbox')
-            b = (float(xmlbox.find('xmin').text), float(xmlbox.find('xmax').text), float(
-                xmlbox.find('ymin').text), float(xmlbox.find('ymax').text))
+            b = (float(xmlbox.find('xmin').text),
+                 float(xmlbox.find('xmax').text),
+                 float(xmlbox.find('ymin').text),
+                 float(xmlbox.find('ymax').text))
             bb = self.convert((w, h), b)
-            out_file.write(str(cls_id) + " " +
-                           " ".join([str(a) for a in bb]) + '\n')
+            out_file.write(
+                str(cls_id) + " " + " ".join([str(a) for a in bb]) + '\n')
 
     def voc2(self, voc_root_path):
+        """Convert PascalVOC dataset to darknet dataset.
+
+        Args:
+            voc_root_path: str, like VOCdevkit.
+        """
         # change labels
         self.get_classes(voc_root_path)
 
         for year, image_set in self.voc_sets:
-            if not os.path.exists(os.path.join(voc_root_path, 'VOC%s/labels/' % (year))):
-                os.makedirs(os.path.join(
-                    voc_root_path, 'VOC%s/labels/' % (year)))
-            if not os.path.exists(os.path.join(voc_root_path, 'VOC%s/ImageSets/Main/%s.txt' % (year, image_set))):
+            if not os.path.exists(
+                    os.path.join(voc_root_path, 'VOC%s/labels/' % (year))):
+                os.makedirs(
+                    os.path.join(voc_root_path, 'VOC%s/labels/' % (year)))
+            if not os.path.exists(
+                    os.path.join(
+                        voc_root_path, 'VOC%s/ImageSets/Main/%s.txt' %
+                        (year, image_set))):
                 continue
 
-            image_ids = open(os.path.join(
-                voc_root_path, 'VOC%s/ImageSets/Main/%s.txt' % (year, image_set))).read().strip().split()
-            with open(os.path.join(voc_root_path, '%s_%s.txt' % (year, image_set)), 'w') as list_file:
+            image_ids = open(
+                os.path.join(voc_root_path, 'VOC%s/ImageSets/Main/%s.txt' %
+                             (year, image_set))).read().strip().split()
+            with open(
+                    os.path.join(voc_root_path,
+                                 '%s_%s.txt' % (year, image_set)),
+                    'w') as list_file:
                 image_file_list = []
                 for image_id in image_ids:
-                    image_file_path = os.path.abspath(os.path.join(
-                        voc_root_path, 'VOC{}/JPEGImages/{}.jpg'.format(year, image_id)))
+                    image_file_path = os.path.abspath(
+                        os.path.join(
+                            voc_root_path,
+                            'VOC{}/JPEGImages/{}.jpg'.format(year, image_id)))
                     image_file_list.append(image_file_path)
                     self.convert_annotation(year, image_id, voc_root_path)
                 list_file.write('\n'.join(image_file_list))
@@ -271,7 +313,9 @@ def test():
 
     spliter = DataSplit(root_dir)
     groups = spliter.prefix_grouping(prefix_list)
-    split_result = spliter.split_group_by_rate(groups, test_rate, val_rate=val_rate)
+    split_result = spliter.split_group_by_rate(groups,
+                                               test_rate,
+                                               val_rate=val_rate)
     spliter.save(split_result)
 
 

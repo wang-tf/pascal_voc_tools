@@ -47,7 +47,7 @@ def average_precision_matric():
 
 def resize_image_by_size(image, width, height):
     assert len(image.shape) == 3, 'Can only use RGB image.'
-    original_height, original_width, channel= image.shape
+    original_height, original_width, channel = image.shape
     mask_image = np.zeros((height, width, channel), dtype=np.uint8)
 
     rate = min(float(width) / original_width, float(height) / original_height)
@@ -58,6 +58,7 @@ def resize_image_by_size(image, width, height):
     vertical_bias = int((height - new_height) / 2)
 
     resized_image = cv2.resize(image, (new_width, new_height))
-    mask_image[vertical_bias:vertical_bias+new_height, horizion_bias:horizion_bias+new_width] = resized_image
+    mask_image[vertical_bias:vertical_bias + new_height,
+               horizion_bias:horizion_bias + new_width] = resized_image
 
     return mask_image, rate, (horizion_bias, vertical_bias)
