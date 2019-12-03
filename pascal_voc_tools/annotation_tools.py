@@ -14,7 +14,26 @@ from ._xml_parser import XmlParser
 import matplotlib.pyplot as plt
 
 
+def split_list(val, split_num):
+    max_val = max(val)
+    min_val = min(val)
+    x = list(np.arange(min_val, max_val, (max_val - min_val) / split_num)) + [max_val]
+
+    normalized_val = [(n - min_val) / (max_val - min_val) for n in val]
+    normalized_val = [int(n * split_num) for n in normalized_val]
+    y = [normalized_val.count(n) for n in range(split_num + 1)]
+    return x, y
+
+
 class AnnotationTools():
+    """ deal with annotations in PascalVOC format dataset.
+
+    Attributes:
+        ann_dir: str, the dir including xmls.
+        name_set: str, tha id list file.
+    Raises:
+        AssertError: can not find path.
+    """
     def __init__(self, ann_dir, name_set=None):
         self.ann_dir = ann_dir
         self.name_set = name_set
@@ -67,6 +86,12 @@ class AnnotationTools():
         return id_bbox_map
 
     def iou_analyse(self, save_dir='./', split_num=100):
+        """ Draw iou distribution in dataset.
+
+        Args:
+            save_dir: str, image save dir;
+            split_num: int, the number of data partitions
+        """
         class_iou_map = {}
         for xml_path in self.ann_list:
             xml_data = XmlParser().load(xml_path)
@@ -85,27 +110,25 @@ class AnnotationTools():
                 roi_area = (xmax - xmin) * (ymax - ymin)
                 class_iou_map[obj['name']].append(roi_area / image_area)
 
-        # Divided into 100 servings from 0.0 to 1.0
         for key, val in class_iou_map.items():
-            new_val = [n * 100 for n in val]
-            max_val = max(new_val)
-            min_val = min(new_val)
-            normalized_val = [(n - min_val) / (max_val - min_val)
-                              for n in new_val]
-            normalized_val = [int(n * split_num) for n in normalized_val]
-            x = list(
-                np.arange(min_val, max_val, (max_val - min_val) / split_num))
-            y = [normalized_val.count(n) for n in range(split_num)]
+            x, y = split_list(val, split_num)
 
             plt.figure(figsize=(8, 4))
-            plt.plot(x, y, "b--", linewidth=1)
-            plt.xlabel("IOU(object area/image area) percent/%")
+            plt.plot(x, y, "bD-", linewidth=1)
+            plt.xlabel("IOU(object area/image area)")
             plt.ylabel("Times")
             plt.title("The distribution of Objects' IOU in the dataset")
             plt.savefig(
                 os.path.join(save_dir, "IOU_distribution-{}.jpg".format(key)))
+        return class_iou_map
 
     def height_analyse(self, save_dir='./', split_num=100):
+        """ Draw height ratio distribution in dataset.
+
+        Args:
+            save_dir: str, image save dir;
+            split_num: int, the number of data partitions
+        """
         class_iou_map = {}
         for xml_path in self.ann_list:
             xml_data = XmlParser().load(xml_path)
@@ -119,27 +142,26 @@ class AnnotationTools():
                 ymax = int(obj['bndbox']['ymax'])
                 class_iou_map[obj['name']].append((ymax - ymin) / height)
 
-        # Divided into 100 servings from 0.0 to 1.0
         for key, val in class_iou_map.items():
-            new_val = [n * 100 for n in val]
-            max_val = max(new_val)
-            min_val = min(new_val)
-            normalized_val = [(n - min_val) / (max_val - min_val)
-                              for n in new_val]
-            normalized_val = [int(n * split_num) for n in normalized_val]
-            x = list(
-                np.arange(min_val, max_val, (max_val - min_val) / split_num))
-            y = [normalized_val.count(n) for n in range(split_num)]
+            x, y = split_list(val, split_num)
 
             plt.figure(figsize=(8, 4))
-            plt.plot(x, y, "b--", linewidth=1)
-            plt.xlabel("Height(object/image) percent/%")
+            plt.plot(x, y, "bD-", linewidth=1)
+            plt.xlabel("Height ratio(object/image) percent/%")
             plt.ylabel("Times")
             plt.title("The distribution of Objects' height in the dataset")
             plt.savefig(
-                os.path.join(save_dir, "Height_distribution-{}.jpg".format(key)))
+                os.path.join(save_dir,
+                             "Height_distribution-{}.jpg".format(key)))
+        return class_iou_map
 
     def width_analyse(self, save_dir='./', split_num=100):
+        """ Draw width ratio distribution in dataset.
+
+        Args:
+            save_dir: str, image save dir;
+            split_num: int, the number of data partitions
+        """
         class_iou_map = {}
         for xml_path in self.ann_list:
             xml_data = XmlParser().load(xml_path)
@@ -151,24 +173,19 @@ class AnnotationTools():
 
                 xmin = int(obj['bndbox']['xmin'])
                 xmax = int(obj['bndbox']['xmax'])
-                class_iou_map[obj['name']].append((xmax - xmin) / width)
+                width_ratio = (xmax - xmin) / width
 
-        # Divided into 100 servings from 0.0 to 1.0
+                class_iou_map[obj['name']].append(width_ratio)
+
         for key, val in class_iou_map.items():
-            new_val = [n * 100 for n in val]
-            max_val = max(new_val)
-            min_val = min(new_val)
-            normalized_val = [(n - min_val) / (max_val - min_val)
-                              for n in new_val]
-            normalized_val = [int(n * split_num) for n in normalized_val]
-            x = list(
-                np.arange(min_val, max_val, (max_val - min_val) / split_num))
-            y = [normalized_val.count(n) for n in range(split_num)]
+            x, y = split_list(val, split_num)
 
             plt.figure(figsize=(8, 4))
-            plt.plot(x, y, "b--", linewidth=1)
-            plt.xlabel("Width(object/image) percent/%")
+            plt.plot(x, y, "bD-", linewidth=1)
+            plt.xlabel("Width ratio(object/image) percent/%")
             plt.ylabel("Times")
             plt.title("The distribution of Objects' width in the dataset")
             plt.savefig(
-                os.path.join(save_dir, "Width_distribution-{}.jpg".format(key)))
+                os.path.join(save_dir,
+                             "Width_distribution-{}.jpg".format(key)))
+        return class_iou_map
