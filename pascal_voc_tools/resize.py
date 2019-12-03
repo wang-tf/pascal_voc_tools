@@ -33,7 +33,8 @@ class DatasetResize():
         assert os.path.exists(self.images_dir), self.images_dir
 
         # set save path
-        self.save_annotations_dir = os.path.join(self.save_root_dir, 'Annotations')
+        self.save_annotations_dir = os.path.join(self.save_root_dir,
+                                                 'Annotations')
         self.save_images_dir = os.path.join(self.save_root_dir, 'JPEGImages')
         if not os.path.exists(self.save_annotations_dir):
             os.makedirs(self.save_annotations_dir)
@@ -41,10 +42,17 @@ class DatasetResize():
             os.makedirs(self.save_images_dir)
 
     def _get_annotations(self):
-        annotations_file_list = glob.glob(os.path.join(self.annotations_dir, '*.xml'))
+        annotations_file_list = glob.glob(
+            os.path.join(self.annotations_dir, '*.xml'))
         return annotations_file_list
 
-    def resize_tuple_by_rate(self, rate, image_path, xml_path, save_image_path=None, save_xml_path=None, min_obj_size=8):
+    def resize_tuple_by_rate(self,
+                             rate,
+                             image_path,
+                             xml_path,
+                             save_image_path=None,
+                             save_xml_path=None,
+                             min_obj_size=8):
         """Resize a image and coresponding xml by rate
 
         Args:
@@ -68,7 +76,7 @@ class DatasetResize():
         # resize annotation and save
         parser = XmlParser()
         xml_data = parser.load(xml_path)
-        
+
         original_width = int(xml_data['size']['width'])
         original_height = int(xml_data['size']['height'])
 
@@ -87,12 +95,15 @@ class DatasetResize():
             ymin = int(float(obj['bndbox']['ymin']))
             xmax = int(float(obj['bndbox']['xmax']))
             ymax = int(float(obj['bndbox']['ymax']))
-            
-            new_bndbox = self.resize_bbox(rate, horizion_bias, vertical_bias, [xmin, ymin, xmax, ymax])
+
+            new_bndbox = self.resize_bbox(rate, horizion_bias, vertical_bias,
+                                          [xmin, ymin, xmax, ymax])
             new_bndbox = list(map(int, new_bndbox))
             xmin, ymin, xmax, ymax = new_bndbox
             if xmax - xmin < min_obj_size or ymax - ymin < min_obj_size:
-                print(f'The new size of {xmin}, {ymin}, {xmax}, {ymax} is smaler than {min_obj_size}*{min_obj_size}. delete')
+                print(
+                    f'The new size of {xmin}, {ymin}, {xmax}, {ymax} is smaler than {min_obj_size}*{min_obj_size}. delete'
+                )
                 continue
             xml_data['object'][index]['bndbox']['xmin'] = str(xmin)
             xml_data['object'][index]['bndbox']['ymin'] = str(ymin)
@@ -105,7 +116,12 @@ class DatasetResize():
         parser.save(save_xml_path, xml_data)
         return 1
 
-    def resize_tuple_by_min_size(self, min_size, image_path, xml_path, save_image_path=None, save_xml_path=None):
+    def resize_tuple_by_min_size(self,
+                                 min_size,
+                                 image_path,
+                                 xml_path,
+                                 save_image_path=None,
+                                 save_xml_path=None):
         """Resize a image and coresponding xml by set min size and keep aspect ratio
 
         Args:
@@ -127,9 +143,17 @@ class DatasetResize():
         new_height = int(height * rate)
         new_width = int(width * rate)
 
-        self.resize_tuple_by_rate(rate, image_path, xml_path, save_image_path, save_xml_path)
+        self.resize_tuple_by_rate(rate, image_path, xml_path, save_image_path,
+                                  save_xml_path)
 
-    def resize_tuple_by_size(self, width, height, image_path, xml_path, save_image_path=None, save_xml_path=None, min_obj_size=8):
+    def resize_tuple_by_size(self,
+                             width,
+                             height,
+                             image_path,
+                             xml_path,
+                             save_image_path=None,
+                             save_xml_path=None,
+                             min_obj_size=8):
         """Resize a image and coresponding xml by set fix size
 
         Args:
@@ -147,10 +171,18 @@ class DatasetResize():
         save_xml_path = xml_path if save_xml_path is None else save_xml_path
 
         self.resize_image_by_size(image_path, width, height, save_image_path)
-        self.resize_xml_by_size(xml_path, width, height, save_xml_path, min_obj_size=min_obj_size)
+        self.resize_xml_by_size(xml_path,
+                                width,
+                                height,
+                                save_xml_path,
+                                min_obj_size=min_obj_size)
         return
-    
-    def resize_image_by_size(self, image_path, width, height, save_image_path=None):
+
+    def resize_image_by_size(self,
+                             image_path,
+                             width,
+                             height,
+                             save_image_path=None):
         """Resize an image
 
         Args:
@@ -162,10 +194,13 @@ class DatasetResize():
         assert os.path.exists(image_path), image_path
 
         image = cv2.imread(image_path)
-        resized_image, rate, bias = resize_image_by_size(image, width=width, height=height)
+        resized_image, rate, bias = resize_image_by_size(image,
+                                                         width=width,
+                                                         height=height)
 
         cv2.imwrite(save_image_path, resized_image)
-        assert os.path.exists(save_image_path), 'Result was not saved: '.format(save_image_path)
+        assert os.path.exists(
+            save_image_path), 'Result was not saved: '.format(save_image_path)
         return
 
     def resize_bbox(self, rate, horizion_bias, vertical_bias, bbox):
@@ -185,8 +220,13 @@ class DatasetResize():
         xmax = xmax * rate + horizion_bias
         ymax = ymax * rate + vertical_bias
         return [xmin, ymin, xmax, ymax]
-    
-    def resize_xml_by_size(self, xml_path, width, height, save_xml_path=None, min_obj_size=8):
+
+    def resize_xml_by_size(self,
+                           xml_path,
+                           width,
+                           height,
+                           save_xml_path=None,
+                           min_obj_size=8):
         """
         Args:
             xml_path: str, xml file path;
@@ -197,11 +237,13 @@ class DatasetResize():
         """
         parser = XmlParser()
         xml_data = parser.load(xml_path)
-        
+
         original_width = int(xml_data['size']['width'])
         original_height = int(xml_data['size']['height'])
 
-        rate = min(float(width) / original_width, float(height) / original_height)
+        rate = min(
+            float(width) / original_width,
+            float(height) / original_height)
         new_width = int(original_width * rate)
         new_height = int(original_height * rate)
 
@@ -217,12 +259,15 @@ class DatasetResize():
             ymin = int(float(obj['bndbox']['ymin']))
             xmax = int(float(obj['bndbox']['xmax']))
             ymax = int(float(obj['bndbox']['ymax']))
-            
-            new_bndbox = self.resize_bbox(rate, horizion_bias, vertical_bias, [xmin, ymin, xmax, ymax])
+
+            new_bndbox = self.resize_bbox(rate, horizion_bias, vertical_bias,
+                                          [xmin, ymin, xmax, ymax])
             new_bndbox = list(map(int, new_bndbox))
             xmin, ymin, xmax, ymax = new_bndbox
             if xmax - xmin < min_obj_size or ymax - ymin < min_obj_size:
-                print(f'The new size of {xmin}, {ymin}, {xmax}, {ymax} is smaler than {min_obj_size}*{min_obj_size}. delete')
+                print(
+                    f'The new size of {xmin}, {ymin}, {xmax}, {ymax} is smaler than {min_obj_size}*{min_obj_size}. delete'
+                )
                 continue
             xml_data['object'][index]['bndbox']['xmin'] = str(xmin)
             xml_data['object'][index]['bndbox']['ymin'] = str(ymin)
@@ -242,14 +287,19 @@ class DatasetResize():
             rate: float or int, scale size.
         """
         annotations_file_list = self._get_annotations()
-        
+
         print('Resizing dataset ...')
         for xml_path in tqdm.tqdm(annotations_file_list):
             image_path = self.get_image_path_by_xml_path(xml_path)
             save_xml_path = self.get_save_path(xml_path)
             save_image_path = self.get_save_path(image_path)
 
-            self.resize_tuple_by_rate(rate, image_path, xml_path, save_image_path, save_xml_path, min_obj_size=min_obj_size)
+            self.resize_tuple_by_rate(rate,
+                                      image_path,
+                                      xml_path,
+                                      save_image_path,
+                                      save_xml_path,
+                                      min_obj_size=min_obj_size)
 
     def resize_by_min_size(self, min_size):
         """Resize whole dataset by set a min image size.
@@ -258,14 +308,15 @@ class DatasetResize():
             min_size: int, new image min size.
         """
         annotations_file_list = self._get_annotations()
-    
+
         print('Resizing dataset ...')
         for xml_path in tqdm.tqdm(annotations_file_list):
             image_path = self.get_image_path_by_xml_path(xml_path)
             save_xml_path = self.get_save_path(xml_path)
             save_image_path = self.get_save_path(image_path)
 
-            self.resize_tuple_by_min_size(min_size, image_path, xml_path, save_image_path, save_xml_path)
+            self.resize_tuple_by_min_size(min_size, image_path, xml_path,
+                                          save_image_path, save_xml_path)
 
     def resize_by_size(self, width, height, min_obj_size=8):
         """Resize whole dataset by set a fix image size.
@@ -275,14 +326,20 @@ class DatasetResize():
             height: intn new image height.
         """
         annotations_file_list = self._get_annotations()
-    
+
         print('Resizing dataset ...')
         for xml_path in tqdm.tqdm(annotations_file_list):
             image_path = self.get_image_path_by_xml_path(xml_path)
             save_xml_path = self.get_save_path(xml_path)
             save_image_path = self.get_save_path(image_path)
 
-            self.resize_tuple_by_size(width, height, image_path, xml_path, save_image_path, save_xml_path, min_obj_size=min_obj_size)
+            self.resize_tuple_by_size(width,
+                                      height,
+                                      image_path,
+                                      xml_path,
+                                      save_image_path,
+                                      save_xml_path,
+                                      min_obj_size=min_obj_size)
         return
 
     def get_save_path(self, path):
@@ -295,10 +352,11 @@ class DatasetResize():
             new xml path
         """
         name = os.path.basename(path)
-        save_dir = self.save_annotations_dir if name[-4:] == '.xml' else self.save_images_dir
+        save_dir = self.save_annotations_dir if name[
+            -4:] == '.xml' else self.save_images_dir
         save_path = os.path.join(save_dir, name)
         return save_path
-        
+
     def get_image_path_by_xml_path(self, xml_path):
         """using xml path to inference image path
 
@@ -309,7 +367,8 @@ class DatasetResize():
             image path in current dataset.
         """
         xml_name = os.path.basename(xml_path)
-        image_path = os.path.join(self.images_dir, xml_name.replace('.xml', '.jpg'))
+        image_path = os.path.join(self.images_dir,
+                                  xml_name.replace('.xml', '.jpg'))
         return image_path
 
     def copy_imagesets(self, imagesets_dir=None):
@@ -321,7 +380,7 @@ class DatasetResize():
         if imagesets_dir is None:
             imagesets_dir = os.path.join(self.root_dir, 'ImageSets/Main')
 
-        # make save dir        
+        # make save dir
         save_dir = os.path.join(self.save_root_dir, 'ImageSets/Main')
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
@@ -332,4 +391,3 @@ class DatasetResize():
                 shutil.copy2(file_path, save_dir)
             else:
                 print('Can not find path: {}'.format(file_path))
-

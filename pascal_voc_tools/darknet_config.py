@@ -49,8 +49,9 @@ class DarknetConfig():
                     key, value = param.strip().split('=')
                     key = key.strip()
                     if key in new_layer.param:
-                        print('Warrning: The key {} has been appended, the value is {}'.format(
-                            key, new_layer.param[key]))
+                        print(
+                            'Warrning: The key {} has been appended, the value is {}'
+                            .format(key, new_layer.param[key]))
                 new_layer.param[key] = value.strip()
             layers.append(new_layer)
         self.layers = layers
@@ -72,8 +73,10 @@ class DarknetConfig():
                 anchors_str = []
                 for mask_index in mask:
                     assert mask_index < len(new_anchors)
-                anchors_str = ['{:.2f},{:.2f}'.format(
-                    anchor[0], anchor[1]) for anchor in new_anchors]
+                anchors_str = [
+                    '{:.2f},{:.2f}'.format(anchor[0], anchor[1])
+                    for anchor in new_anchors
+                ]
                 layers[i].param['anchors'] = ', '.join(anchors_str)
                 layers[i].param['num'] = str(len(new_anchors))
         return layers
@@ -89,10 +92,10 @@ class DarknetConfig():
             param_list = []
             for key, val in layer.param.items():
                 if key.strip() == '' or key[0] == '#':
-                    param_list.append((key+' '+val).strip())
+                    param_list.append((key + ' ' + val).strip())
                 else:
-                    param_list.append(key+' = ' + val)
-            name = '['+layer.name+']'
+                    param_list.append(key + ' = ' + val)
+            name = '[' + layer.name + ']'
             config_data.append(name + '\n' + '\n'.join(param_list) + '\n')
         config_data = '\n'.join(config_data)
 
@@ -115,7 +118,7 @@ class DarknetConfig():
             labels = f.read().strip().split('\n')
 
         layers = self.parse(cfg_file)
-        for i in range(len(layers)-1, 1):
+        for i in range(len(layers) - 1, 1):
             if layers[i].name == 'yolo':
                 # check classes
                 assert int(layers[i].param['classes']) == len(labels)
@@ -124,15 +127,18 @@ class DarknetConfig():
                 assert anchors % 2 == 0, 'anchors length is not right: {}'.format(
                     anchors)
                 # check num
-                assert int(layers[i].param['num']) == len(anchors/2)
+                assert int(layers[i].param['num']) == len(anchors / 2)
                 # check mask
                 mask = list(map(int, layers[i].param['mask'].split(',')))
                 for m in mask:
-                    assert m < anchors/2, 'mask is not right: {}'.format(mask)
+                    assert m < anchors / 2, 'mask is not right: {}'.format(
+                        mask)
                 # check filters
-                assert layers[i-1].name == 'convolutional'
-                assert int(layers[i-1].param['filters']) == (len(labels) + 5) * len(
-                    mask), 'filters is not right: {}'.format(layers[i-1].param['filters'])
+                assert layers[i - 1].name == 'convolutional'
+                assert int(
+                    layers[i - 1].param['filters']) == (len(labels) + 5) * len(
+                        mask), 'filters is not right: {}'.format(
+                            layers[i - 1].param['filters'])
         print('Check Done.')
         return 0
 

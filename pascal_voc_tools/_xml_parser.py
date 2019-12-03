@@ -12,7 +12,6 @@ except ImportError:
 
 class XmlParser():
     """Code and Decode the xml file"""
-
     def __init__(self):
         self.file_path = None
 
@@ -101,10 +100,13 @@ class XmlParser():
 
         return save_dict
 
-    def set_head(self, path, width, height,
-                      depth=3,
-                      database='Unknown',
-                      segmented=0):
+    def set_head(self,
+                 path,
+                 width,
+                 height,
+                 depth=3,
+                 database='Unknown',
+                 segmented=0):
         """Generate a xml file
 
         Args:
@@ -119,14 +121,16 @@ class XmlParser():
 
         self.template_parameters['path'] = abspath
         self.template_parameters['filename'] = os.path.basename(abspath)
-        self.template_parameters['folder'] = os.path.basename(os.path.dirname(abspath))
+        self.template_parameters['folder'] = os.path.basename(
+            os.path.dirname(abspath))
         self.template_parameters['size'] = {
-                'width': width,
-                'height': height,
-                'depth': depth,
-            }
+            'width': width,
+            'height': height,
+            'depth': depth,
+        }
         self.template_parameters['source'] = {
-                'database': database,}
+            'database': database,
+        }
         self.template_parameters['segmented'] = segmented
         self.template_parameters['object'] = []
 
@@ -179,4 +183,3 @@ class XmlParser():
             content = self.annotation_template.render(
                 **self.template_parameters)
             xml_file.write(content)
-
