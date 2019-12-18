@@ -5,7 +5,7 @@ import os
 import numpy as np
 import glob
 import cv2
-from ._xml_parser import XmlParser
+from pascal_voc_tools import XmlParser
 import openpyxl
 from openpyxl.styles import Alignment, colors
 import argparse
@@ -64,8 +64,7 @@ def get_objects(annotation_path):
     return class_bbox
 
 
-def compare(main_name, detections_dir, annotations_dir, iou_threshold=0.3, save_path=None):
-
+def load_annotations(annotations_dir, main_name):
     test_file = os.path.join(annotations_dir, '../ImageSets/Main', main_name+'.txt')
     assert os.path.exists(test_file), test_file
 
@@ -73,14 +72,25 @@ def compare(main_name, detections_dir, annotations_dir, iou_threshold=0.3, save_
         names = f.read().strip().split('\n')
     image_path_list = sorted([os.path.join(annotations_dir, '../JPEGImages', name+'.jpg') for name in names])
 
-    countthing_results = {}
-    countthing_results['Total'] = {}
-
+    annotations_data = {}
     for image_path in tqdm.tqdm(image_path_list):
         name = os.path.basename(image_path).replace('.jpg', '')
         annotation_path = os.path.join(annotations_dir, name+'.xml')
 
-        class_bbox = get_objects(annotation_path)       
+        class_bbox = get_objects(annotation_path)
+        annotations_data[name] = class_bbox
+    return annotations_data
+
+
+def compare(main_name, detections_dir, annotations_dir, iou_threshold=0.3, save_path=None):
+
+    annotations_data = load_annotations(annotations_dir, main_name)
+
+    countthing_results = {}
+    countthing_results['Total'] = {}
+
+    for name in tqdm.tqdm(annotations_data.keys()):
+        class_bbox = annotations_data[name]
 
         detection_path = os.path.join(detections_dir, name+'.xml')
         detection_class_bbox = get_objects(detection_path)
@@ -95,6 +105,7 @@ def compare(main_name, detections_dir, annotations_dir, iou_threshold=0.3, save_
         for class_name in class_bbox.keys():
             countthing_results[name][class_name] = class_results = {}
 
+            image_path = os.path.join(annotations_dir, '../JPEGImages', name+'.jpg')
             image = cv2.imread(image_path)
 
             if class_name not in detection_class_bbox:
@@ -158,7 +169,7 @@ def compare(main_name, detections_dir, annotations_dir, iou_threshold=0.3, save_
         countthing_results['Total'][class_name]['Recall'] = recall
         countthing_results['Total'][class_name]['Precision'] = precision
         countthing_results['Total'][class_name]['F1'] = f1
-        countthing_results['Total'][class_name]['业务识别率'] /= len(image_path_list)
+        countthing_results['Total'][class_name]['业务识别率'] /= len(annotations_data.keys())
     
     return countthing_results
 
