@@ -174,6 +174,142 @@ def compare(main_name, detections_dir, annotations_dir, iou_threshold=0.3, save_
     return countthing_results
 
 
+def split_data_by_category(bbox_data, category_index=1):
+    category_list = []
+    category_bbox_map = {}
+
+    for bbox in bbox_data:
+        category = bbox[category_index]
+
+        if category not in category_list:
+            category_list.append(category)
+            category_bbox_map[category] = []
+        
+        category_bbox_map[category].append(bbox[:category_index]+bbox[category_index+1:])
+
+    return category_bbox_map
+
+
+def split_data_by_image(bbox_data, image_id_index=0):
+    image_id_list = []
+    image_id_bbox_map = {}
+
+    for bbox in bbox_data:
+        image_id = bbox[image_id_index]
+
+        if image_id not in image_id_list:
+            image_id_list.append(image_id)
+            image_id_bbox_map[image_id] = []
+        
+        image_id_bbox_map[image_id].append(bbox[:image_id_index]+bbox[image_id_index+1:])
+    
+    return image_id_bbox_map
+
+
+def compare_by_data(annotations_data, detections_data, jpg_dir='', iou_threshold=0.3, save_path=None):
+    """data format: [[image_id, category_id, confidence, xmin, ymin, xmax, ymax]]
+    """
+    # split by category_id
+    annotation_category_bbox_map = split_data_by_category(annotations_data)
+    for key, val in annotation_category_bbox_map.items():
+        annotation_image_id_bbox_map = split_data_by_image(val)
+        annotation_category_bbox_map[key] = annotation_image_id_bbox_map
+
+    detection_category_bbox_map = split_data_by_category(detections_data)
+    for key, val in detection_category_bbox_map.items():
+        detection_image_id_bbox_map = split_data_by_image(val)
+        detection_category_bbox_map[key] = detection_image_id_bbox_map  
+
+    compare_results = {}
+    # countthing_results['Total'] = {}
+
+    for category_id in tqdm.tqdm(annotation_category_bbox_map.keys()):
+        # reset init
+        detected_annotations = []
+        wrong_detected = []
+        image_false_positives = 0
+        image_true_positives = 0
+
+        compare_results[category_id] = {}
+
+        annotation_image_id_bbox_map = annotation_category_bbox_map[category_id]
+        detection_image_id_bbox_map = detection_category_bbox_map[category_id]
+
+        for image_id in annotation_image_id_bbox_map.keys():
+
+            compare_results[category_id][image_id] = class_results = {}
+
+            # add enpty list if no object catched in this image
+            if image_id not in detection_image_id_bbox_map:
+                detection_image_id_bbox_map[image_id] = []
+            
+            def bbox_check(detected_bboxes, labeled_bboxes, iou_threshold):
+                detected_annotations = []
+                true_positive_index = []
+                false_positive_index = []
+
+                for obj_index, obj in enumerate(detected_bboxes):
+                    overlaps = compute_overlap(np.array(obj), np.array(labeled_bboxes))
+                    assigned_annotation = np.argmax(overlaps)
+                    max_overlap = overlaps[assigned_annotation]
+
+                    if max_overlap >= iou_threshold and assigned_annotation not in detected_annotations:
+                        detected_annotations.append(assigned_annotation)
+                        true_positive_index.append(assigned_annotation)
+                    else:
+                        false_positive_index.append(assigned_annotation)
+                return true_positive_index, false_positive_index
+
+            for obj_index, obj in enumerate(detection_image_id_bbox_map[image_id]):
+                # TODO: optimize processing logic
+                overlaps = compute_overlap(np.array(obj), np.array(annotation_image_id_bbox_map[image_id]))
+                assigned_annotation = np.argmax(overlaps)
+                max_overlap = overlaps[assigned_annotation]
+
+                if max_overlap >= iou_threshold and assigned_annotation not in detected_annotations:
+                    detected_annotations.append(assigned_annotation)
+                    image_true_positives += 1
+                else:
+                    image_false_positives += 1
+                    wrong_detected.append(obj_index)
+
+            image_category_recall = float(image_true_positives) / max(len(detection_image_id_bbox_map[image_id]), np.finfo(np.float64).eps)
+            image_category_precision = float(image_true_positives) / max(image_true_positives+image_false_positives, np.finfo(np.float64).eps)
+            image_category_f1 = 2 * (image_category_recall * image_category_precision) / max(image_category_recall + image_category_precision, np.finfo(np.float64).eps)
+
+            class_results['DetectionsNumber'] = len(detection_image_id_bbox_map[image_id])
+            class_results['AnnotationsNumber'] = len(annotation_image_id_bbox_map[image_id])
+            class_results['TruePositive'] = image_true_positives
+            class_results['FalsePositive'] = image_false_positives
+            class_results['Recall'] = image_category_recall
+            class_results['Precision'] = image_category_precision
+            class_results['F1'] = image_category_f1
+            class_results['BusinessPrecision'] = 1-(class_results['FalsePositive']+class_results['AnnotationsNumber']-class_results['TruePositive'])/class_results['AnnotationsNumber']
+
+            # if class_name not in countthing_results['Total']:
+            #     countthing_results['Total'][class_name] = {'TruePositive': 0, 'FalsePositive': 0, 'AnnotationsNumber': 0, 'DetectionsNumber': 0, '业务识别率': 0}
+            # countthing_results['Total'][class_name]['TruePositive'] += image_true_positives
+            # countthing_results['Total'][class_name]['FalsePositive'] += image_false_positives
+            # countthing_results['Total'][class_name]['AnnotationsNumber'] += len(class_bbox[class_name])
+            # countthing_results['Total'][class_name]['DetectionsNumber'] += len(detection_class_bbox[class_name])
+            # countthing_results['Total'][class_name]['BusinessPrecision'] += class_results['BusinessPrecision']
+    
+    # for class_name in countthing_results['Total'].keys():
+    #     true_positives = countthing_results['Total'][class_name]['TruePositive']
+    #     false_positives = countthing_results['Total'][class_name]['FalsePositive']
+    #     annotations_number = countthing_results['Total'][class_name]['AnnotationsNumber']
+    #     recall = float(true_positives) / annotations_number
+    #     precision = float(true_positives) / max(true_positives + false_positives, np.finfo(np.float64).eps)
+    #     f1 = 2 * (recall * precision) / (recall + precision)
+
+    #     countthing_results['Total'][class_name]['Recall'] = recall
+    #     countthing_results['Total'][class_name]['Precision'] = precision
+    #     countthing_results['Total'][class_name]['F1'] = f1
+    #     countthing_results['Total'][class_name]['业务识别率'] /= len(annotations_data.keys())
+    
+    return compare_results
+
+
 def merge_results(results):
     output = {}
     for model_key, model_val in results.items():
@@ -189,66 +325,8 @@ def merge_results(results):
     return output
 
 
-def save_result(save_path, results):
-    results = merge_results(results)
-
-    wb = openpyxl.Workbook()
-    sheet = wb['Sheet']
-    row_index = 0
-    column_index = 65
-
-    name_column_index = chr(column_index)
-    class_column_index = chr(column_index+1)
-    annotations_number_column_index = column_index+2
-    sheet['{}{}'.format(name_column_index, row_index+2)] = 'Name'
-    sheet['{}{}'.format(class_column_index, row_index+2)] = 'Class'
-    sheet['{}{}'.format(chr(annotations_number_column_index), row_index+2)] = 'Annotations Number'
-
-    row_start = 3
-    for image_key in sorted(results.keys()):
-        image_val = results[image_key]
-        # name
-        sheet['{}{}'.format(name_column_index, row_start)] = image_key
-
-        for class_key in sorted(image_val.keys()):
-            class_val = image_val[class_key]
-            # classm, annotations number
-            sheet['{}{}'.format(class_column_index, row_start)] = class_key
-
-            model_column_start = annotations_number_column_index + 1
-            for model_key in sorted(class_val.keys()):
-                model_val = class_val[model_key]
-                
-                if sheet['{}{}'.format(chr(annotations_number_column_index), row_start)].value == None:
-                    sheet['{}{}'.format(chr(annotations_number_column_index), row_start)] = model_val['AnnotationsNumber']
-                else:
-                    assert sheet['{}{}'.format(chr(annotations_number_column_index), row_start)].value == model_val['AnnotationsNumber'], (
-                        sheet['{}{}'.format(chr(annotations_number_column_index), row_start)],
-                        model_val['AnnotationsNumber']
-                    )
-
-                # add title
-                if sheet['{}{}'.format(chr(model_column_start), row_index+1)].value == None:
-                    item_number = len(model_val)-1
-                    sheet.merge_cells('{}{}:{}{}'.format(chr(model_column_start), row_index+1, chr(model_column_start+item_number-1), row_index+1))
-                    sheet['{}{}'.format(chr(model_column_start), row_index+1)].alignment = Alignment(horizontal='center', vertical='center')
-                    sheet['{}{}'.format(chr(model_column_start), row_index+1)] = model_key
-
-                for index, item_key in enumerate(sorted(model_val.keys())):
-                    item_val = model_val[item_key]
-                    if item_key in ['AnnotationsNumber']:
-                        continue
-                    # add title
-                    if sheet['{}{}'.format(chr(model_column_start), row_index+2)].value == None:
-                        sheet['{}{}'.format(chr(model_column_start), row_index+2)] = item_key
-        
-                    sheet['{}{}'.format(chr(model_column_start), row_start)] = '{:.4f}'.format(item_val) if isinstance(item_val, float) else item_val
-
-                    model_column_start += 1
-            
-        row_start += 1
-    
-    wb.save(save_path)
+def save2csv(save_path, results):
+    pass
 
 
 def draw_object(img, bndbox, color, text=None, point=False):
