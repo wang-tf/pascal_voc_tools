@@ -362,7 +362,7 @@ def main(iou_threshold=0.45):
                  #'RetinaNet_Torch': retinanet_torch_result,
                  'yolo': yolo_result,
 }
-    save_result('./recognition_result_compare-iou_{}.xlsx'.format(iou_threshold), save_dict)
+    # save_result('./recognition_result_compare-iou_{}.xlsx'.format(iou_threshold), save_dict)
 
     #print('CountThings', countthing_result['Total'])
     #print('Retinanet', retinanet_result['Total'])

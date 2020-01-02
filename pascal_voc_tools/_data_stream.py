@@ -27,7 +27,7 @@ class VideoStream():
 
     def get_frame(self):
         while self.cap.isOpened():
-            _, image = cap.read()
+            _, image = self.cap.read()
             yield image
 
     def save_frame(self, image):
