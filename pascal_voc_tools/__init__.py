@@ -14,10 +14,12 @@ from .annotation_tools import AnnotationTools
 from .anchors_kmeans import AnchorsKMeans
 from .darknet_config import DarknetConfig
 from ._xml_parser import XmlParser
+from ._xml_parser import PascalXml
 
-__all__ = ['DatasetResize',
-           'DataSplit', 'DarknetDataset', 'SplitImageAnnotation',
-           'AnnotationTools', 'AnchorsKMeans', 'DarknetConfig', 'XmlParser']
+__all__ = [
+    'DatasetResize', 'DataSplit', 'DarknetDataset', 'SplitImageAnnotation',
+    'AnnotationTools', 'AnchorsKMeans', 'DarknetConfig', 'XmlParser',
+    'PascalXml'
+]
 
 name = 'pascal_voc_tools'
-
