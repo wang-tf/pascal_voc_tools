@@ -3,6 +3,7 @@
 decode xml file of Pascal Voc annotation write a xml file about pascal voc annotation.
 """
 import os
+import logging
 from jinja2 import Environment, PackageLoader
 try:
     import xml.etree.cElementTree as ET
@@ -11,6 +12,7 @@ except ImportError:
 from lxml import etree
 from lxml.etree import SubElement
 
+logger = logging.getLogger(__name__)
 
 class Size(object):
     """Size data format in Pascal VOC xml
@@ -117,10 +119,12 @@ def load_pascal_xml(
     try:
         default_format.path = annotation.xpath('//path/text()')[0]
     except Exception:
+        logger.warning('Can not find path node in xml.')
         pass
     try:
         default_format.source.database = annotation.xpath('//source/database/text()')[0]
     except Exception:
+        logger.warning('Can not find source/database node in xml.')
         pass
 
     default_format.size.width = int(annotation.xpath('//size/width/text()')[0])
@@ -132,7 +136,11 @@ def load_pascal_xml(
     for obj in annotation.xpath('//object'):
         xml_obj = XmlObject()
         xml_obj.name = obj.xpath('//name/text()')[0]
-        xml_obj.pose = obj.xpath('//pose/text()')[0]
+        try:
+            xml_obj.pose = obj.xpath('//pose/text()')[0]
+        except Exception:
+            logger.warning("Can not find pose node in xml")
+            pass
         xml_obj.truncated = int(obj.xpath('//truncated/text()')[0])
         xml_obj.difficult = int(obj.xpath('//difficult/text()')[0])
         xml_obj.bndbox.xmin = int(obj.xpath('//bndbox/xmin/text()')[0])
