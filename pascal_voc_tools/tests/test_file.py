@@ -18,4 +18,4 @@ class TestFile(unittest.TestCase):
         os.makedirs(self.xmls_dir)
 
     def test_check_image_format(self):
-        
+        pass

@@ -85,3 +85,4 @@ class FalsePositiveArgument:
 
         for try_index in range(try_time):
             #TODO(wangtf): 随机选择一个mask为0的位置，判断以该位置为左上角点是否可行
+            pass
