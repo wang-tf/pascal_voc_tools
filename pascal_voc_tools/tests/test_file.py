@@ -8,8 +8,9 @@ from PIL import Image
 sys.path.append('./')
 from pascal_voc_tools import file
 
+
 class TestFile(unittest.TestCase):
-    voc_dir = os.path.join(__file__, 'VOC2007')
+    voc_dir = os.path.join(os.path.dirname(__file__), 'VOC2007')
     jpeg_dir = os.path.join(voc_dir, 'JPEGImages')
     xmls_dir = os.path.join(voc_dir, 'Annotations')
 
