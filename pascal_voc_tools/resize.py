@@ -101,9 +101,8 @@ class DatasetResize():
             new_bndbox = list(map(int, new_bndbox))
             xmin, ymin, xmax, ymax = new_bndbox
             if xmax - xmin < min_obj_size or ymax - ymin < min_obj_size:
-                print(
-                    f'The new size of {xmin}, {ymin}, {xmax}, {ymax} is smaler than {min_obj_size}*{min_obj_size}. delete'
-                )
+                print(f'The new size of {xmin}, {ymin}, {xmax}, {ymax}',
+                      ' is smaler than {min_obj_size}*{min_obj_size}. delete')
                 continue
             xml_data['object'][index]['bndbox']['xmin'] = str(xmin)
             xml_data['object'][index]['bndbox']['ymin'] = str(ymin)
