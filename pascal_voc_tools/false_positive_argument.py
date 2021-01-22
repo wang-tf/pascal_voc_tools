@@ -63,7 +63,7 @@ class FalsePositiveArgument:
             image_mask
         """
         mask = np.zeros((image.shape[0], image.shape[1]))
-        
+
         for obj in xml_data['object']:
             xmin = int(obj['xmin'])
             ymin = int(obj['ymin'])
@@ -72,7 +72,7 @@ class FalsePositiveArgument:
 
             mask[ymin:ymax, xmin:xmax] = 1
         return mask
-    
+
     def ramdom_pad(self, image_path, fp_image, try_time=10):
         """try to pad fp_image to image.
         """
@@ -85,3 +85,4 @@ class FalsePositiveArgument:
 
         for try_index in range(try_time):
             #TODO(wangtf): 随机选择一个mask为0的位置，判断以该位置为左上角点是否可行
+            pass
