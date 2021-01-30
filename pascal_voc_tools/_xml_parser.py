@@ -14,6 +14,7 @@ from lxml.etree import SubElement
 
 logger = logging.getLogger(__name__)
 
+
 class ImageSize(object):
     """Size data format in Pascal VOC xml
     """
@@ -46,14 +47,15 @@ class Bndbox(object):
 
     def __str__(self):
         return f"Bndbox({self.xmin}, {self.ymin}, {self.xmax}, {self.ymax})"
-   
+
     def convert2relative_xywh(self, size):
         """from absolute coordinate to relative coordinate
 
         Arguments:
             size: a tuple of width and height
         """
-        box = (float(self.xmin), float(self.xmax), float(self.ymin), float(self.ymax))
+        box = (float(self.xmin), float(self.xmax), float(self.ymin),
+               float(self.ymax))
         dw = 1. / (size[0])
         dh = 1. / (size[1])
         x = max((box[0] + box[1]) / 2.0 - 1, 0)
@@ -65,6 +67,7 @@ class Bndbox(object):
         y = y * dh
         h = h * dh
         return (x, y, w, h)
+
 
 class XmlObject(object):
     """Object data foramt in Pascal VOC xml
@@ -127,7 +130,8 @@ class PascalXml(object):
         return self
 
     def convert2yolotxt(self, save_path: str, classes: list):
-        assert save_path[-4:] == '.txt', f"Please check save_path is right: {save_path}"
+        assert save_path[
+            -4:] == '.txt', f"Please check save_path is right: {save_path}"
 
         out_file = open(save_path, 'w')
 
@@ -140,9 +144,10 @@ class PascalXml(object):
             if cls not in classes or int(difficult) == 1:
                 continue
             cls_id = classes.index(cls)
-            bb = obj.bndbox.convert2relative_xywh()
-            out_file.write(str(cls_id) + " " + " ".join([str(a) for a in bb]) + '\n')
-        
+            bb = obj.bndbox.convert2relative_xywh((w, h))
+            out_file.write(
+                str(cls_id) + " " + " ".join([str(a) for a in bb]) + '\n')
+
         out_file.close()
 
         return self
@@ -163,7 +168,8 @@ class PascalXml(object):
             # print([file_name, width, height, category, xmin, ymin, xmax, ymax])
             if classes and category not in classes:
                 continue
-            info_list.append([file_name, width, height, category, xmin, ymin, xmax, ymax])
+            info_list.append(
+                [file_name, width, height, category, xmin, ymin, xmax, ymax])
         return info_list
 
 
@@ -190,7 +196,8 @@ def load_pascal_xml(
         pass
     try:
         default_format.source = DataSource()
-        default_format.source.database = annotation.xpath('./source/database/text()')[0]
+        default_format.source.database = annotation.xpath(
+            './source/database/text()')[0]
     except Exception:
         logger.warning('Can not find source/database node in xml.')
         pass
