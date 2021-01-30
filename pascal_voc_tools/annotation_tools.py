@@ -1,17 +1,22 @@
 # -*- encoding: utf-8 -*-
 '''
 @File : annotation_tools.py
-@Time : 2019/12/02 11:14:56
+@Time : 2021/01/30 14:42:56
 @Author : wangtf
 @Desc : None
 '''
 
-# here put the import lib
 import os
 import glob
+import csv
+import logging
+import tqdm
 import numpy as np
 from ._xml_parser import XmlParser
+from ._xml_parser import PascalXml
 import matplotlib.pyplot as plt
+
+logger = logging.getLogger(__name__)
 
 
 def split_list(val, split_num):
@@ -189,3 +194,34 @@ class AnnotationTools():
                 os.path.join(save_dir,
                              "Width_distribution-{}.jpg".format(key)))
         return class_iou_map
+
+    def convert2csv(self, save_path, category_list=[]):
+        """find all bndbox info and save to csv file. If category_list exist, only save
+        the categories in list.
+        
+        Arguments:
+            save_path: a csv file path.
+            category_list: a list for keep category to save.
+
+        Raises:
+            AssertionError: the save path not a csv file path.
+        """
+        header = ['file_name', 'width', 'height', 'category', 'xmin', 'ymin', 'xmax', 'ymax']
+
+        xmls_list = sorted(glob.glob(os.path.join(self.ann_dir, '*.xml')))
+        logger.info(f"Find {len(xmls_list)} xmls")
+
+        assert '.csv' == save_path[-4:], "Make sure the save path is a new csv file path"
+        f = open(save_path, 'w')
+        f_csv = csv.writer(f)
+        f_csv.writerow(header)
+
+        # bbox_info_list = []
+        for xml_path in tqdm.tqdm(xmls_list):
+            # print(xml_path)
+            bbox_list = PascalXml().load(xml_path).convert2csv(category_list)
+            f_csv.writerows(bbox_list)
+
+        f.close()
+
+        return self
