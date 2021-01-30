@@ -103,7 +103,7 @@ class PascalXml(object):
         source: the DataSource.
         size: the ImageSize.
         segmented: default 0.
-        object: a list of XmlObject
+        object_list: a list of XmlObject
     """
     def __init__(self,
                  folder: str = '',
@@ -112,14 +112,14 @@ class PascalXml(object):
                  source: DataSource = DataSource(),
                  size: ImageSize = ImageSize(),
                  segmented: int = 0,
-                 object: list = []):
+                 object_list: list = []):
         self.folder = folder
         self.filename = filename
         self.path = path
         self.source = source
         self.size = size
         self.segmented = segmented
-        self.object = object
+        self.object = object_list
 
     def load(self, xml_file_path):
         """form a xml file load data.
