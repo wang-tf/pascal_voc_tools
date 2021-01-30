@@ -23,9 +23,12 @@ class ImageSize(object):
         self.depth = depth
 
 
-class Source(object):
+class DataSource(object):
     def __init__(self, database: str = ''):
         self.database = database
+
+    def __str__(self):
+        return f"DataScorce({self.database})"
 
 
 class Bndbox(object):
@@ -43,7 +46,25 @@ class Bndbox(object):
 
     def __str__(self):
         return f"Bndbox({self.xmin}, {self.ymin}, {self.xmax}, {self.ymax})"
+   
+    def convert2relative_xywh(self, size):
+        """from absolute coordinate to relative coordinate
 
+        Arguments:
+            size: a tuple of width and height
+        """
+        box = (float(self.xmin), float(self.xmax), float(self.ymin), float(self.ymax))
+        dw = 1. / (size[0])
+        dh = 1. / (size[1])
+        x = max((box[0] + box[1]) / 2.0 - 1, 0)
+        y = max((box[2] + box[3]) / 2.0 - 1, 0)
+        w = box[1] - box[0]
+        h = box[3] - box[2]
+        x = x * dw
+        w = w * dw
+        y = y * dh
+        h = h * dh
+        return (x, y, w, h)
 
 class XmlObject(object):
     """Object data foramt in Pascal VOC xml
@@ -71,7 +92,7 @@ class PascalXml(object):
                  folder: str = '',
                  filename: str = '',
                  path: str = '',
-                 source: Source = Source(),
+                 source: DataSource = DataSource(),
                  size: ImageSize = ImageSize(),
                  segmented: int = 0,
                  object: list = []):
@@ -105,6 +126,46 @@ class PascalXml(object):
                 obj.name = new_name
         return self
 
+    def convert2yolotxt(self, save_path: str, classes: list):
+        assert save_path[-4:] == '.txt', f"Please check save_path is right: {outut_dir}"
+
+        out_file = open(save_path, 'w')
+
+        w = int(self.size.width)
+        h = int(self.size.height)
+
+        for obj in self.object:
+            difficult = obj.difficult
+            cls = obj.name
+            if cls not in classes or int(difficult) == 1:
+                continue
+            cls_id = classes.index(cls)
+            bb = obj.bndbox.convert2relative_xywh()
+            out_file.write(str(cls_id) + " " + " ".join([str(a) for a in bb]) + '\n')
+        
+        out_file.close()
+
+        return self
+
+    def convert2csv(self, classes: list):
+        file_name = self.filename
+        width = self.size.width
+        height = self.size.height
+
+        info_list = []
+        for bbox in self.object:
+            category = bbox.name
+            xmin = bbox.bndbox.xmin
+            ymin = bbox.bndbox.ymin
+            xmax = bbox.bndbox.xmax
+            ymax = bbox.bndbox.ymax
+
+            # print([file_name, width, height, category, xmin, ymin, xmax, ymax])
+            if classes and category not in classes:
+                continue
+            info_list.append([file_name, width, height, category, xmin, ymin, xmax, ymax])
+        return info_list
+
 
 def load_pascal_xml(
     xml_file_path: str, default_format=PascalXml()) -> PascalXml:
@@ -128,6 +189,7 @@ def load_pascal_xml(
         logger.warning('Can not find path node in xml.')
         pass
     try:
+        default_format.source = DataSource()
         default_format.source.database = annotation.xpath('./source/database/text()')[0]
     except Exception:
         logger.warning('Can not find source/database node in xml.')
