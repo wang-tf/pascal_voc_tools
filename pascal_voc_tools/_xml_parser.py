@@ -127,7 +127,7 @@ class PascalXml(object):
         return self
 
     def convert2yolotxt(self, save_path: str, classes: list):
-        assert save_path[-4:] == '.txt', f"Please check save_path is right: {outut_dir}"
+        assert save_path[-4:] == '.txt', f"Please check save_path is right: {save_path}"
 
         out_file = open(save_path, 'w')
 
