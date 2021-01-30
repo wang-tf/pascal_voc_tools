@@ -14,7 +14,7 @@ from lxml.etree import SubElement
 
 logger = logging.getLogger(__name__)
 
-class Size(object):
+class ImageSize(object):
     """Size data format in Pascal VOC xml
     """
     def __init__(self, width: int = 0, height: int = 0, depth: int = 0):
@@ -41,6 +41,9 @@ class Bndbox(object):
         self.xmax = xmax
         self.ymax = ymax
 
+    def __str__(self):
+        return f"Bndbox({self.xmin}, {self.ymin}, {self.xmax}, {self.ymax})"
+
 
 class XmlObject(object):
     """Object data foramt in Pascal VOC xml
@@ -57,6 +60,9 @@ class XmlObject(object):
         self.difficult = difficult
         self.bndbox = bndbox
 
+    def __str__(self):
+        return f"XmlObject({self.name}, {self.pose}, {self.truncated}, {self.difficult}, {self.bndbox})"
+
 
 class PascalXml(object):
     """Pascal VOC xml file data format
@@ -66,7 +72,7 @@ class PascalXml(object):
                  filename: str = '',
                  path: str = '',
                  source: Source = Source(),
-                 size: Size = Size(),
+                 size: ImageSize = ImageSize(),
                  segmented: int = 0,
                  object: list = []):
         self.folder = folder
@@ -114,39 +120,41 @@ def load_pascal_xml(
     html = etree.parse(xml_file_path)
     annotation = html.xpath('/annotation')[0]  # load first annotation
 
-    default_format.folder = annotation.xpath('//folder/text()')[0]
-    default_format.filename = annotation.xpath('//filename/text()')[0]
+    default_format.folder = annotation.xpath('./folder/text()')[0]
+    default_format.filename = annotation.xpath('./filename/text()')[0]
     try:
-        default_format.path = annotation.xpath('//path/text()')[0]
+        default_format.path = annotation.xpath('./path/text()')[0]
     except Exception:
         logger.warning('Can not find path node in xml.')
         pass
     try:
-        default_format.source.database = annotation.xpath('//source/database/text()')[0]
+        default_format.source.database = annotation.xpath('./source/database/text()')[0]
     except Exception:
         logger.warning('Can not find source/database node in xml.')
         pass
 
-    default_format.size.width = int(annotation.xpath('//size/width/text()')[0])
+    default_format.size = ImageSize()
+    default_format.size.width = int(annotation.xpath('./size/width/text()')[0])
     default_format.size.height = int(
-        annotation.xpath('//size/height/text()')[0])
-    default_format.size.depth = int(annotation.xpath('//size/depth/text()')[0])
-    default_format.segmented = int(annotation.xpath('//segmented/text()')[0])
+        annotation.xpath('./size/height/text()')[0])
+    default_format.size.depth = int(annotation.xpath('./size/depth/text()')[0])
+    default_format.segmented = int(annotation.xpath('./segmented/text()')[0])
 
-    for obj in annotation.xpath('//object'):
+    for obj in annotation.xpath('./object'):
         xml_obj = XmlObject()
-        xml_obj.name = obj.xpath('//name/text()')[0]
+        xml_obj.name = obj.xpath('./name/text()')[0]
         try:
-            xml_obj.pose = obj.xpath('//pose/text()')[0]
+            xml_obj.pose = obj.xpath('./pose/text()')[0]
         except Exception:
             logger.warning("Can not find pose node in xml")
             pass
-        xml_obj.truncated = int(obj.xpath('//truncated/text()')[0])
-        xml_obj.difficult = int(obj.xpath('//difficult/text()')[0])
-        xml_obj.bndbox.xmin = int(obj.xpath('//bndbox/xmin/text()')[0])
-        xml_obj.bndbox.ymin = int(obj.xpath('//bndbox/ymin/text()')[0])
-        xml_obj.bndbox.xmax = int(obj.xpath('//bndbox/xmax/text()')[0])
-        xml_obj.bndbox.ymax = int(obj.xpath('//bndbox/ymax/text()')[0])
+        xml_obj.truncated = int(obj.xpath('./truncated/text()')[0])
+        xml_obj.difficult = int(obj.xpath('./difficult/text()')[0])
+        xml_obj.bndbox = Bndbox()
+        xml_obj.bndbox.xmin = int(obj.xpath('./bndbox/xmin/text()')[0])
+        xml_obj.bndbox.ymin = int(obj.xpath('./bndbox/ymin/text()')[0])
+        xml_obj.bndbox.xmax = int(obj.xpath('./bndbox/xmax/text()')[0])
+        xml_obj.bndbox.ymax = int(obj.xpath('./bndbox/ymax/text()')[0])
         default_format.object.append(xml_obj)
 
     return default_format
