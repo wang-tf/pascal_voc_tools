@@ -2,3 +2,4 @@ lxml
 opencv-python
 tqdm
 matplotlib
+sphinxcontrib-apidoc
