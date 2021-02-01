@@ -9,22 +9,6 @@ except ImportError:
     import xml.etree.ElementTree as ET
 
 
-def verify_image(jpeg_path):
-    """Verify image format.
-    Args:
-        jpeg_path: str, the image path.
-
-    Returns:
-        result: bool, if image ok, True will return.
-    """
-    assert os.path.exists(jpeg_path), jpeg_path
-    try:
-        Image.open(jpeg_path).verify()
-    except:
-        return False
-    return True
-
-
 def check_jpg_xml_match(xml_dir, jpeg_dir):
     """
     Check matching degree about xml files and jpeg files.
@@ -54,25 +38,6 @@ def check_jpg_xml_match(xml_dir, jpeg_dir):
         print("Only have jpg file: {}\n{}".format(len(jpeg_diff), jpeg_diff))
 
     return inter
-
-
-def check_image_format(jpeg_dir):
-    """
-    Change image format from others to jpg.
-    Args:
-        jpeg_dir: str, the dir only have image.
-    """
-    image_path_list = glob.glob(os.path.join(jpeg_dir, '*.*'))
-    for jpeg_path in image_path_list:
-        suffix = os.path.basename(jpeg_path).split('.')[-1]
-        if suffix != 'jpg' and verify_image(jpeg_path):
-            image = Image.open(jpeg_path)
-            save_path = jpeg_path.replace('.{}'.format(suffix), '.jpg')
-            image.save(save_path)
-            os.remove(jpeg_path)
-            print('Image from {} to {}'.format(jpeg_path, save_path))
-
-    return True
 
 
 def check_xml_info(xml_info):

@@ -66,6 +66,22 @@ class Bndbox(object):
         h = h * dh
         return (x, y, w, h)
 
+    def resize(self, rate, horizion_bias=0, vertical_bias=0):
+        """resize a bbox
+
+        Args:
+            rate: box change rate;
+            horizion_bias: xmin and xmax will add it;
+            vertical_bias: ymin and ymax will add it,
+        Returns:
+            new bbox list
+        """
+        self.xmin = self.xmin * rate + horizion_bias
+        self.ymin = self.ymin * rate + vertical_bias
+        self.xmax = self.xmax * rate + horizion_bias
+        self.ymax = self.ymax * rate + vertical_bias
+        return self
+
 
 class XmlObject(object):
     """Object data foramt in Pascal VOC xml
@@ -230,6 +246,65 @@ class PascalXml(object):
                         bndbox=bndbox)
         self.object.append(obj)
         return self
+
+    def resize_obj_by_rate(self, rate):
+        original_width = int(self.size.width)
+        original_height = int(self.size.height)
+        new_width = int(original_width * rate)
+        new_height = int(original_height * rate)
+
+        horizion_bias = 0
+        vertical_bias = 0
+
+        self.size.width = new_width
+        self.size.height = new_height
+
+        for obj in self.object:
+            obj.bndbox = obj.bndbox.resize(rate, horizion_bias, vertical_bias)
+
+        return self
+
+    def crop_annotations(self, split_bboxes, iou_thresh=0.7):
+        """Using split_bboxes to split an xml file.
+        Arguments:
+            xml_info: dict, all info about a xml.
+            split_bboxes: list, like [[xmin, ymin, xmax, ymax], ]
+        Returns:
+            subannotations: list, like [xml_info, ]
+        """
+        subannotations = []
+        for bbox in split_bboxes:
+            xmin, ymin, xmax, ymax = bbox
+
+            # init sub xml info
+            sub_xml = PascalXml()
+            sub_xml.folder = self.folder
+            sub_xml.path = self.path
+            sub_xml.filename = self.filename
+            sub_xml.size = ImageSize(xmax - xmin, ymax - ymin, self.size.depth)
+            sub_xml.source = DataSource(self.source.database)
+            sub_xml.segmented = self.segmented
+            sub_xml.object = []
+            for bbox in self.object:
+                ob_xmin = bbox.bndbox.xmin
+                ob_ymin = bbox.bndbox.ymin
+                ob_xmax = bbox.bndbox.xmax
+                ob_ymin = bbox.bndbox.ymax
+
+                if iou([ob_xmin, ob_ymin, ob_xmax, ob_ymax],
+                       [xmin, ymin, xmax, ymax]) > iou_thresh:
+                    sub_bbox = Bndbox(max(ob_xmin - xmin, 1),
+                                      max(ob_ymin - ymin, 1),
+                                      min(ob_xmax - xmax, xmax - xmin - 1),
+                                      min(ob_ymax - ymax, ymax - ymin - 1))
+                    sub_obj = XmlObject(name=bbox.name,
+                                    bndbox=sub_bbox,
+                                    truncated=bbox.truncated,
+                                    difficult=bbox.difficult)
+                    sub_xml.object.append(sub_obj)
+            subannotations.append(sub_xml)
+
+        return subannotations
 
 
 def load_pascal_xml(
