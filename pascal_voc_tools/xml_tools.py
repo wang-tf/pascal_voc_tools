@@ -2,8 +2,9 @@
 """
 decode xml file of Pascal Voc annotation write a xml file about pascal voc annotation.
 """
-import os
 import logging
+import os
+
 from lxml import etree
 from lxml.etree import SubElement
 
