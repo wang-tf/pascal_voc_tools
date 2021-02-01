@@ -2,18 +2,20 @@
 """
 Some tools for VOC data set dir.
 """
-import os
 import glob
-import cv2
-import shutil
-import tqdm
 import logging
+import os
+import shutil
 
-from .xml_tools import PascalXml
-from .image_tools import ImageWrapper
+import cv2
+import tqdm
+
 from .annotations_tools import Annotations
+from .image_tools import ImageWrapper
 from .jpegimages_tools import JPEGImages
 from .tools import bb_intersection_over_union as iou
+from .xml_tools import PascalXml
+
 logger = logging.getLogger(__name__)
 
 
@@ -51,19 +53,19 @@ class VOCTools(object):
     Attributes:
         root_dir: a voc directory like VOC2007.
     """
-    def __init__(self, root_dir: str):
+    def __init__(self, voc_root_dir: str):
         self.root_dir = voc_root_dir
         self.year = self.get_year()
 
-        self.annotations = Annotations(os.path.join(root_dir, 'Annotations'))
-        self.jpegimages = JPEGImages()
-        self.jpegimages.dir = os.path.join(root_dir, 'JPEGImages')
-        self.main = Main(os.path.join(root_dir, 'ImageSets/Main'))
+        self.annotations = Annotations(os.path.join(self.root_dir, 'Annotations'))
+        self.jpegimages = JPEGImages(os.path.join(self.root_dir, 'JPEGImages'))
+        self.main = Main(os.path.join(self.root_dir, 'ImageSets/Main'))
 
     def get_year(self):
         year = None
-        if self.voc_root_dir and 'VOC' == self.voc_root_dir[:3]:
-            yaer = self.voc_root_dir[3:]
+        sub_dir = os.path.basename(self.root_dir.rstrip('/'))
+        if sub_dir and 'VOC' == sub_dir[:3]:
+            year = sub_dir[3:]
         return year
 
     def gen_format_dir(self):
@@ -271,18 +273,24 @@ class VOCTools(object):
         # get name list
         xml_file_list = glob.glob(os.path.join(self.annotations.dir, '*.xml'))
         jpeg_file_list = glob.glob(os.path.join(self.jpegimages.dir, '*.jpg'))
-        xml_name_list = [os.path.basename(path).split('.')[0] for path in xml_file_list]
-        jpeg_name_list = [os.path.basename(path).split('.')[0] for path in jpeg_file_list]
+        xml_name_list = [
+            os.path.basename(path).split('.')[0] for path in xml_file_list
+        ]
+        jpeg_name_list = [
+            os.path.basename(path).split('.')[0] for path in jpeg_file_list
+        ]
 
         inter = list(set(xml_name_list).intersection(set(jpeg_name_list)))
         xml_diff = list(set(xml_name_list).difference(set(jpeg_name_list)))
         jpeg_diff = list(set(jpeg_name_list).difference(set(xml_name_list)))
 
         # print result and return matched list
-        print('Find {} xml, {} jpg, matched {}.'.format(len(xml_file_list), len(jpeg_file_list), len(inter)))
+        print('Find {} xml, {} jpg, matched {}.'.format(
+            len(xml_file_list), len(jpeg_file_list), len(inter)))
         if len(xml_diff):
             print("Only have xml file: {}\n{}".format(len(xml_diff), xml_diff))
         if len(jpeg_diff):
-            print("Only have jpg file: {}\n{}".format(len(jpeg_diff), jpeg_diff))
+            print("Only have jpg file: {}\n{}".format(len(jpeg_diff),
+                                                      jpeg_diff))
 
         return inter
