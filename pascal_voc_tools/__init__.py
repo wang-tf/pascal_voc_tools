@@ -15,8 +15,8 @@ from .darknet_config import DarknetConfig
 from ._xml_parser import PascalXml
 
 __all__ = [
-    'DataSplit', 'DarknetDataset', 'JPEGImages',
-    'Annotations', 'AnchorsKMeans', 'DarknetConfig', 'PascalXml'
+    'DataSplit', 'DarknetDataset', 'JPEGImages', 'Annotations',
+    'AnchorsKMeans', 'DarknetConfig', 'PascalXml'
 ]
 
 name = 'pascal_voc_tools'

@@ -1,6 +1,11 @@
-import cv2
+# coding:utf-8
 
-class Image(object):
+import numpy as np
+import cv2
+from PIL import Image
+
+
+class ImageWrapper(object):
     def __init__(self):
         self.path = None
         self.data = None

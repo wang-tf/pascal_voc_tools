@@ -10,7 +10,7 @@ import tqdm
 import logging
 
 from ._xml_parser import PascalXml
-from .image_utils import Image
+from .image_utils import ImageWrapper
 from .annotation_tools import Annotations
 from .images_tools import JPEGImages
 logger = logging.getLogger(__name__)
@@ -92,7 +92,7 @@ class VOCTools(object):
             save_image_path = os.path.join(save_voc.jpegimages.dir, image_name)
 
             # resize image
-            image = Image().load(image_path)
+            image = ImageWrapper().load(image_path)
             rate = image.resize_letter_box(width, height)
             image.save(save_image_path)
 
@@ -219,7 +219,7 @@ class VOCTools(object):
             database: str, save xml database name.
             segmented: bool, save xml segmented name.
         """
-        image = Image().load(jpg_path)
+        image = ImageWrapper().load(jpg_path)
         split_bboxes = self.get_crop_bboxes(width=image.width,
                                             height=image.height,
                                             cover_thresh=cover_thresh)
