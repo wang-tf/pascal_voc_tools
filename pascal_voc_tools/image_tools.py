@@ -1,8 +1,13 @@
 # coding:utf-8
+import glob
+import logging
+import os
 
-import numpy as np
 import cv2
+import numpy as np
 from PIL import Image
+
+logger = logging.getLogger(__name__)
 
 
 class ImageWrapper(object):
@@ -15,7 +20,7 @@ class ImageWrapper(object):
         self.width = None
         self.height = None
         self.depth = None
-    
+
     def load(self, image_path: str):
         """load image data.
 
@@ -39,7 +44,7 @@ class ImageWrapper(object):
         self.height = self.data.shape[0]
         self.width = self.data.shape[1]
         return self
-    
+
     def resize_letter_box(self, width: int, height: int):
         """using letter box to resize image data.
 
@@ -62,10 +67,10 @@ class ImageWrapper(object):
         horizion_bias = int((width - new_width) / 2)
         vertical_bias = int((height - new_height) / 2)
 
-        resized_image = cv2.resize(image, (new_width, new_height))
+        resized_image = cv2.resize(self.data, (new_width, new_height))
         mask_image[vertical_bias:vertical_bias + new_height,
-                horizion_bias:horizion_bias + new_width] = resized_image
-        
+                   horizion_bias:horizion_bias + new_width] = resized_image
+
         self.data = mask_image
         self.height = new_height
         self.width = new_width
@@ -85,7 +90,7 @@ class ImageWrapper(object):
 
         Arguments:
             split_bboxes: list, like[[xmin, ymin, xmax, ymax], ]
-        
+
         Returns:
             images: list, all subimages.
         """
@@ -111,7 +116,8 @@ def verify_image(jpeg_path):
     assert os.path.exists(jpeg_path), jpeg_path
     try:
         Image.open(jpeg_path).verify()
-    except:
+    except Exception as err:
+        logger.exception(err)
         return False
     return True
 
