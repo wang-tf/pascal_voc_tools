@@ -185,7 +185,7 @@ class Annotations():
     def convert2csv(self, save_path, category_list=[]):
         """find all bndbox info and save to csv file. If category_list exist, only save
         the categories in list.
-        
+
         Arguments:
             save_path: a csv file path.
             category_list: a list for keep category to save.

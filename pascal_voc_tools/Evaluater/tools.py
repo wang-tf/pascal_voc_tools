@@ -174,7 +174,8 @@ def voc_eval(class_recs: dict,
     false_positive_number = fp[-1]
 
     recall = tp / float(npos)
-    # avoid divide by zero in case the first detection matches a difficult ground truth
+    # avoid divide by zero in case the first detection matches
+    # a difficult ground truth
     precision = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)
     average_precision = voc_ap(recall, precision, use_07_metric)
 

@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
-import numpy as np
-import cv2
-
 
 def bb_intersection_over_union(boxA, boxB):
     """calculate intersection over union between two boundboxes.
@@ -43,4 +40,3 @@ def average_precision_11_point():
 
 def average_precision_matric():
     return
-

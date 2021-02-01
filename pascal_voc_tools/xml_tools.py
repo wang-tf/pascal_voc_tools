@@ -1,12 +1,14 @@
 # -*- coding:utf-8 -*-
 """
-decode xml file of Pascal Voc annotation write a xml file about pascal voc annotation.
+decode xml file of Pascal Voc annotation write a xml file
+about pascal voc annotation.
 """
 import logging
-import os
 
 from lxml import etree
 from lxml.etree import SubElement
+
+from .tools import bb_intersection_over_union as iou
 
 logger = logging.getLogger(__name__)
 
@@ -123,7 +125,8 @@ class XmlObject(object):
         self.bndbox = bndbox
 
     def __str__(self):
-        return f"XmlObject({self.name}, {self.pose}, {self.truncated}, {self.difficult}, {self.bndbox})"
+        return f"XmlObject({self.name}, {self.pose}," + \
+            f" {self.truncated}, {self.difficult}, {self.bndbox})"
 
 
 class PascalXml(object):
@@ -232,7 +235,6 @@ class PascalXml(object):
             xmax = bbox.bndbox.xmax
             ymax = bbox.bndbox.ymax
 
-            # print([file_name, width, height, category, xmin, ymin, xmax, ymax])
             if classes and category not in classes:
                 continue
             info_list.append(
@@ -316,7 +318,7 @@ class PascalXml(object):
                 ob_xmin = bbox.bndbox.xmin
                 ob_ymin = bbox.bndbox.ymin
                 ob_xmax = bbox.bndbox.xmax
-                ob_ymin = bbox.bndbox.ymax
+                ob_ymax = bbox.bndbox.ymax
 
                 if iou([ob_xmin, ob_ymin, ob_xmax, ob_ymax],
                        [xmin, ymin, xmax, ymax]) > iou_thresh:
@@ -335,7 +337,8 @@ class PascalXml(object):
 
 
 def load_pascal_xml(
-    xml_file_path: str, default_format=PascalXml()) -> PascalXml:
+                    xml_file_path: str,
+                    default_format=PascalXml()) -> PascalXml:
     """Load a pascal format xml file.
     Arguments:
         xml_file_path: a xml file path.

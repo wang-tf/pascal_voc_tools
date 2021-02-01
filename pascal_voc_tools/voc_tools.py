@@ -5,15 +5,12 @@ Some tools for VOC data set dir.
 import glob
 import logging
 import os
-import shutil
 
-import cv2
 import tqdm
 
 from .annotations_tools import Annotations
 from .image_tools import ImageWrapper
 from .jpegimages_tools import JPEGImages
-from .tools import bb_intersection_over_union as iou
 from .xml_tools import PascalXml
 
 logger = logging.getLogger(__name__)
@@ -57,7 +54,8 @@ class VOCTools(object):
         self.root_dir = voc_root_dir
         self.year = self.get_year()
 
-        self.annotations = Annotations(os.path.join(self.root_dir, 'Annotations'))
+        self.annotations = Annotations(
+            os.path.join(self.root_dir, 'Annotations'))
         self.jpegimages = JPEGImages(os.path.join(self.root_dir, 'JPEGImages'))
         self.main = Main(os.path.join(self.root_dir, 'ImageSets/Main'))
 
@@ -119,7 +117,7 @@ class VOCTools(object):
 
         Args:
             xml_path: str, xml file path.
-        
+
         Returns:
             image path in current dataset.
         """
@@ -193,7 +191,7 @@ class VOCTools(object):
             set_name_list: a list like [train, val].
             min_side: a int of sub image min side.
             max_side: a int of sub image max side.
-        
+
         Returns:
             a new VOCTools including new data.
         """
@@ -244,7 +242,8 @@ class VOCTools(object):
             jpg_path: str, image path.
             xml_path: str, xml path.
             cover_thresh: float, cover rate about each subimage, default=0.2.
-            iou_thresh: float, filter annotations which one's iou is smaller than thresh, default=1.0.
+            iou_thresh: float, filter annotations which one's iou is smaller
+                than thresh, default=1.0.
 
         Returns:
             subimages: a list of ImageWrapper.
