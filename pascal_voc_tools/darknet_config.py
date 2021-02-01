@@ -2,7 +2,10 @@
 # -*- coding:utf-8 -*-
 
 import os
+import logging
 from collections import OrderedDict
+
+logger = logging.getLogger(__name__)
 
 
 class Layer():
@@ -49,9 +52,10 @@ class DarknetConfig():
                     key, value = param.strip().split('=')
                     key = key.strip()
                     if key in new_layer.param:
-                        print(
-                            'Warrning: The key {} has been appended, the value is {}'
-                            .format(key, new_layer.param[key]))
+                        logger.warning(
+                            f'The key {key} has been appended, ' +
+                            f'the value is {new_layer.param[key]}'
+                            )
                 new_layer.param[key] = value.strip()
             layers.append(new_layer)
         self.layers = layers
@@ -124,8 +128,7 @@ class DarknetConfig():
                 assert int(layers[i].param['classes']) == len(labels)
                 # check anchors number
                 anchors = layers[i].param['anchors'].split(',')
-                assert anchors % 2 == 0, 'anchors length is not right: {}'.format(
-                    anchors)
+                assert anchors % 2 == 0, f'anchors length is wrong: {anchors}'
                 # check num
                 assert int(layers[i].param['num']) == len(anchors / 2)
                 # check mask

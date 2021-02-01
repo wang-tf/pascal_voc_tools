@@ -30,7 +30,8 @@ def _width_and_height_iou(x, centroids):
             iou = w * c_h / (w * h + (c_w - w) * c_h)
         elif c_w <= w and c_h >= h:  # anchor瘦长
             iou = c_w * h / (w * h + c_w * (c_h - h))
-        else:  # ground truth包围anchor     means both w,h are bigger than c_w and c_h respectively
+        else:  # ground truth包围anchor
+            # means both w,h are bigger than c_w and c_h respectively
             iou = (c_w * c_h) / (w * h)
         IoUs.append(iou)  # will become (k,) shape
     return np.array(IoUs)
