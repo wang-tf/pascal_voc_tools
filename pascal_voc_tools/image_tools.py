@@ -6,6 +6,8 @@ from PIL import Image
 
 
 class ImageWrapper(object):
+    """Some image tools.
+    """
     def __init__(self):
         self.path = None
         self.data = None
@@ -14,7 +16,12 @@ class ImageWrapper(object):
         self.height = None
         self.depth = None
     
-    def load(self, image_path):
+    def load(self, image_path: str):
+        """load image data.
+
+        Arguments:
+            image_path: image file path.
+        """
         self.data = cv2.imread(image_path)
         self.path = image_path
         self.height = self.data.shape[0]
@@ -22,13 +29,27 @@ class ImageWrapper(object):
         self.depth = self.data.shape[2] if len(self.data.shape) == 3 else 1
         return self
 
-    def resize_by_rate(self, rate):
+    def resize_by_rate(self, rate: float):
+        """Resize image.
+
+        Arguments:
+            rate: image resize rate.
+        """
         self.data = cv2.resize(self.data, None, fx=rate, fy=rate)
         self.height = self.data.shape[0]
         self.width = self.data.shape[1]
         return self
     
-    def resize_letter_box(self, width, height):
+    def resize_letter_box(self, width: int, height: int):
+        """using letter box to resize image data.
+
+        Arguments:
+            width: new image width.
+            height: new image height.
+
+        Returns:
+            a flot of resize rate.
+        """
         if self.depth == 1:
             mask_image = np.zeros((height, width), dtype=np.uint8)
         else:
@@ -51,13 +72,20 @@ class ImageWrapper(object):
         return rate
 
     def save(self, save_path):
+        """save image data to a file.
+
+        Arguments:
+            save_path: a image file path.
+        """
         cv2.imwrite(save_path, self.data)
         return self
 
     def crop_image(self, split_bboxes):
         """Split an image to some subimages.
+
         Arguments:
             split_bboxes: list, like[[xmin, ymin, xmax, ymax], ]
+        
         Returns:
             images: list, all subimages.
         """
@@ -105,9 +133,3 @@ def image_convert_2_jpg(images_dir):
             print('Image from {} to {}'.format(jpeg_path, save_path))
 
     return True
-
-
-def resize_by_rate(image_path, save_image_path, rate)
-    image = cv2.imread(image_path)
-    image_resized = cv2.resize(image, None, fx=rate, fy=rate)
-    cv2.imwrite(save_image_path, image_resized)

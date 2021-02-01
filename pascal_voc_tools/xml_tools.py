@@ -12,6 +12,11 @@ logger = logging.getLogger(__name__)
 
 class ImageSize(object):
     """Size data format in Pascal VOC xml
+
+    Attributes:
+        width: a int of image width.
+        height: a int of image height.
+        depth: a int of image depth.
     """
     def __init__(self, width: int = 0, height: int = 0, depth: int = 0):
         self.width = width
@@ -23,6 +28,11 @@ class ImageSize(object):
 
 
 class DataSource(object):
+    """Source data format in Pascal VOC xml
+
+    Attributes:
+        database: a str of dataset name.
+    """
     def __init__(self, database: str = ''):
         self.database = database
 
@@ -32,6 +42,12 @@ class DataSource(object):
 
 class Bndbox(object):
     """Bndbox data format in Object for Pascal VOC xml
+
+    Attributes:
+        xmin: a int of bndbox left.
+        ymin: a int of bndbox top.
+        xmax: a int of bndbox right.
+        ymax: a int of bndbox bottom.
     """
     def __init__(self,
                  xmin: int = 0,
@@ -139,8 +155,12 @@ class PascalXml(object):
 
     def load(self, xml_file_path):
         """form a xml file load data.
+
+        Arguments:
+            xml_file_path: a xml file path.
         """
-        return load_pascal_xml(xml_file_path, self)
+        load_pascal_xml(xml_file_path, self)
+        return self
 
     def save(self, save_xml_path):
         """save data to a xml file.
@@ -148,7 +168,8 @@ class PascalXml(object):
         Arguments:
            save_xml_path: the xml path to save data.
         """
-        return save_pascal_xml(save_xml_path, self)
+        save_pascal_xml(save_xml_path, self)
+        return self
 
     def replace_name(self, old_name, new_name):
         """Replace an object name.
@@ -247,7 +268,12 @@ class PascalXml(object):
         self.object.append(obj)
         return self
 
-    def resize_obj_by_rate(self, rate):
+    def resize_obj_by_rate(self, rate: float):
+        """Resize all bndbox by rate.
+
+        Arguments:
+            rate: a float for timeing bndbox.
+        """
         original_width = int(self.size.width)
         original_height = int(self.size.height)
         new_width = int(original_width * rate)
@@ -298,9 +324,9 @@ class PascalXml(object):
                                       min(ob_xmax - xmax, xmax - xmin - 1),
                                       min(ob_ymax - ymax, ymax - ymin - 1))
                     sub_obj = XmlObject(name=bbox.name,
-                                    bndbox=sub_bbox,
-                                    truncated=bbox.truncated,
-                                    difficult=bbox.difficult)
+                                        bndbox=sub_bbox,
+                                        truncated=bbox.truncated,
+                                        difficult=bbox.difficult)
                     sub_xml.object.append(sub_obj)
             subannotations.append(sub_xml)
 

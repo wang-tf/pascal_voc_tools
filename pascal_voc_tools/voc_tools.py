@@ -9,12 +9,12 @@ import shutil
 import tqdm
 import logging
 
-from ._xml_parser import PascalXml
-from .image_utils import ImageWrapper
-from .annotation_tools import Annotations
-from .images_tools import JPEGImages
-logger = logging.getLogger(__name__)
+from .xml_tools import PascalXml
+from .image_tools import ImageWrapper
+from .annotations_tools import Annotations
+from .jpegimages_tools import JPEGImages
 from .tools import bb_intersection_over_union as iou
+logger = logging.getLogger(__name__)
 
 
 class Main(object):
@@ -46,12 +46,18 @@ class Main(object):
 
 
 class VOCTools(object):
+    """a VOC format dataset.
+
+    Attributes:
+        root_dir: a voc directory like VOC2007.
+    """
     def __init__(self, root_dir: str):
         self.root_dir = voc_root_dir
         self.year = self.get_year()
 
         self.annotations = Annotations(os.path.join(root_dir, 'Annotations'))
-        self.jpegimages = JPEGImages(os.path.join(root_dir, 'JPEGImages'))
+        self.jpegimages = JPEGImages()
+        self.jpegimages.dir = os.path.join(root_dir, 'JPEGImages')
         self.main = Main(os.path.join(root_dir, 'ImageSets/Main'))
 
     def get_year(self):
@@ -72,18 +78,22 @@ class VOCTools(object):
             os.makedirs(main_dir)
         return self
 
-    def resize_by_size(self, width, height):
+    def resize_by_size(self, width, height, save_root_dir):
         """Resize whole dataset by set a fix image size.
 
         Args:
-            width: int, new image width;
-            height: intn new image height.
+            width: int, new image width.
+            height: int, new image height.
+            save_root_dir: a new dir to save data.
+
+        Returns:
+            new VOCTools have new data.
         """
         self.annotations.load()
         save_voc = VOCTools(save_root_dir)
         save_voc.gen_format_dir(save_root_dir)
 
-        print('Resizing dataset ...')
+        logger.info('Resizing dataset ...')
         for xml_path in tqdm.tqdm(self.annotations.ann_list):
             image_path = self.get_image_path_by_xml_path(xml_path)
             xml_name = os.path.basename(xml_path)
@@ -117,7 +127,7 @@ class VOCTools(object):
         return image_path
 
     def match_jpg_xml(self):
-        self.jpegimages.load()
+        self.jpegimages.load(self.jpegimages.dir)
         self.annotations.load()
 
         images_name = [
@@ -139,14 +149,19 @@ class VOCTools(object):
         ]
         return matched_images_path, matched_xmls_path
 
-    def get_crop_bboxes(self, width, height, cover_thresh=0.2):
+    def get_crop_bboxes(self,
+                        width,
+                        height,
+                        min_side,
+                        max_side,
+                        cover_thresh=0.2):
         bboxes = []
         if width >= height:
-            x_stride = self.image_max_side
-            y_stride = self.image_min_side
+            x_stride = max_side
+            y_stride = min_side
         else:
-            x_stride = self.image_min_side
-            y_stride = self.image_max_side
+            x_stride = min_side
+            y_stride = max_side
 
         def add_row_crop(start_y):
             start_x = 0
@@ -168,7 +183,18 @@ class VOCTools(object):
                   save_root_dir,
                   set_name_list,
                   min_side=1000,
-                  max_size=1333):
+                  max_side=1333):
+        """split image and annotation to some sub data.
+
+        Arguments:
+            save_root_dir: a new dir to save new data.
+            set_name_list: a list like [train, val].
+            min_side: a int of sub image min side.
+            max_side: a int of sub image max side.
+        
+        Returns:
+            a new VOCTools including new data.
+        """
         new_voc = VOCTools(save_root_dir)
         new_voc.gen_format_dir()
 
@@ -186,7 +212,7 @@ class VOCTools(object):
                 jpg_path = os.path.join(self.jpegimages.dir, name_id + '.jpg')
 
                 images, xml_writers = self.crop_image_annotations(
-                    jpg_path, xml_path)
+                    jpg_path, xml_path, min_side, max_side)
                 for i, (image,
                         xml_writer) in enumerate(zip(images, xml_writers)):
                     new_name_id = name_id + '_{:0>2d}'
@@ -196,32 +222,37 @@ class VOCTools(object):
                     save_jpg_path = os.path.join(new_voc.jpegimages.dir,
                                                  new_name_id + '.jpg')
                     image.save(save_jpg_path)
-                    xml_writer.folder = new_voc.jpegimages
+                    xml_writer.folder = new_voc.jpegimages.dir
                     xml_writer.path = save_jpg_path
                     xml_writer.save(save_xml_path)
-        
+
         new_voc.main.save()
         return new_voc
 
     def crop_image_annotations(self,
                                jpg_path,
                                xml_path,
+                               min_side,
+                               max_side,
                                cover_thresh=0.2,
-                               iou_thresh=1.0,
-                               database='Unknown',
-                               segmented=0):
+                               iou_thresh=1.0):
         """Split an image and it's annotation file.
+
         Arguments:
             jpg_path: str, image path.
             xml_path: str, xml path.
             cover_thresh: float, cover rate about each subimage, default=0.2.
             iou_thresh: float, filter annotations which one's iou is smaller than thresh, default=1.0.
-            database: str, save xml database name.
-            segmented: bool, save xml segmented name.
+
+        Returns:
+            subimages: a list of ImageWrapper.
+            subannotations: a list of PascalXml
         """
         image = ImageWrapper().load(jpg_path)
         split_bboxes = self.get_crop_bboxes(width=image.width,
                                             height=image.height,
+                                            min_side=min_side,
+                                            max_side=max_side,
                                             cover_thresh=cover_thresh)
         subimages = image.crop_image(split_bboxes)
 
@@ -229,3 +260,29 @@ class VOCTools(object):
         subannotations = xml_info.crop_annotations(split_bboxes)
 
         return subimages, subannotations
+
+    def check_jpg_xml_match(self):
+        """Check matching degree about xml files and jpeg files.
+        """
+        # arguemnts check
+        assert os.path.exists(self.annotations.dir), self.annotations.dir
+        assert os.path.exists(self.jpegimages.dir), self.jpegimages.dir
+
+        # get name list
+        xml_file_list = glob.glob(os.path.join(self.annotations.dir, '*.xml'))
+        jpeg_file_list = glob.glob(os.path.join(self.jpegimages.dir, '*.jpg'))
+        xml_name_list = [os.path.basename(path).split('.')[0] for path in xml_file_list]
+        jpeg_name_list = [os.path.basename(path).split('.')[0] for path in jpeg_file_list]
+
+        inter = list(set(xml_name_list).intersection(set(jpeg_name_list)))
+        xml_diff = list(set(xml_name_list).difference(set(jpeg_name_list)))
+        jpeg_diff = list(set(jpeg_name_list).difference(set(xml_name_list)))
+
+        # print result and return matched list
+        print('Find {} xml, {} jpg, matched {}.'.format(len(xml_file_list), len(jpeg_file_list), len(inter)))
+        if len(xml_diff):
+            print("Only have xml file: {}\n{}".format(len(xml_diff), xml_diff))
+        if len(jpeg_diff):
+            print("Only have jpg file: {}\n{}".format(len(jpeg_diff), jpeg_diff))
+
+        return inter

@@ -1,10 +1,7 @@
 # -*- encoding: utf-8 -*-
-'''
-@File : annotation_tools.py
-@Time : 2021/01/30 14:42:56
-@Author : wangtf
-@Desc : None
-'''
+"""
+A wrapper for Annotations directory.
+"""
 
 import os
 import glob
@@ -12,7 +9,7 @@ import csv
 import logging
 import tqdm
 import numpy as np
-from ._xml_parser import PascalXml
+from .xml_tools import PascalXml
 import matplotlib.pyplot as plt
 
 logger = logging.getLogger(__name__)

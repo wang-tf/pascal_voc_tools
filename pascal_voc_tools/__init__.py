@@ -6,17 +6,17 @@ pascal voc format dataset and some usrful
 functions.
 """
 
-from .datatools import DataSplit
-from .datatools import DarknetDataset
-from .annotation_tools import Annotations
-from .images_tools import JPEGImages
+from .image_tools import ImageWrapper
+from .xml_tools import PascalXml
+from .annotations_tools import Annotations
+from .jpegimages_tools import JPEGImages
+from .voc_tools import VOCTools
 from .anchors_kmeans import AnchorsKMeans
 from .darknet_config import DarknetConfig
-from ._xml_parser import PascalXml
 
 __all__ = [
-    'DataSplit', 'DarknetDataset', 'JPEGImages', 'Annotations',
-    'AnchorsKMeans', 'DarknetConfig', 'PascalXml'
+    'ImageWrapper', 'PascalXml', 'JPEGImages', 'Annotations', 'VOCTools',
+    'AnchorsKMeans', 'DarknetConfig'
 ]
 
 name = 'pascal_voc_tools'
