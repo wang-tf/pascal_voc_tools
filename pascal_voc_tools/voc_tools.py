@@ -91,7 +91,7 @@ class VOCTools(object):
         """
         self.annotations.load()
         save_voc = VOCTools(save_root_dir)
-        save_voc.gen_format_dir(save_root_dir)
+        save_voc.gen_format_dir()
 
         logger.info('Resizing dataset ...')
         for xml_path in tqdm.tqdm(self.annotations.ann_list):
@@ -103,11 +103,18 @@ class VOCTools(object):
 
             # resize image
             image = ImageWrapper().load(image_path)
-            rate = image.resize_letter_box(width, height)
+            rate, biases = image.resize_letter_box(width, height)
             image.save(save_image_path)
 
             # resize annotation and save
-            xml_data = PascalXml().load(xml_path).resize_obj_by_rate(rate)
+            xml_data = PascalXml().load(xml_path).resize_obj_by_rate(rate, biases)
+            # rewrite info
+            xml_data.foler = save_voc.jpegimages.dir
+            xml_data.filename = image_name
+            xml_data.path = save_image_path
+            # letter box resize will pad zero
+            xml_data.size.width = width
+            xml_data.size.height = height
             xml_data.save(save_xml_path)
 
         return save_voc
@@ -122,7 +129,7 @@ class VOCTools(object):
             image path in current dataset.
         """
         xml_name = os.path.basename(xml_path)
-        image_path = os.path.join(self.images_dir,
+        image_path = os.path.join(self.jpegimages.dir,
                                   xml_name.replace('.xml', '.jpg'))
         return image_path
 
@@ -183,7 +190,9 @@ class VOCTools(object):
                   save_root_dir,
                   set_name_list,
                   min_side=1000,
-                  max_side=1333):
+                  max_side=1333,
+                  cover_thresh=0.2,
+                  iou_thresh=0.7):
         """split image and annotation to some sub data.
 
         Arguments:
@@ -212,7 +221,8 @@ class VOCTools(object):
                 jpg_path = os.path.join(self.jpegimages.dir, name_id + '.jpg')
 
                 images, xml_writers = self.crop_image_annotations(
-                    jpg_path, xml_path, min_side, max_side)
+                    jpg_path, xml_path, min_side, max_side,
+                    cover_thresh=cover_thresh, iou_thresh=iou_thresh)
                 for i, (image,
                         xml_writer) in enumerate(zip(images, xml_writers)):
                     new_name_id = name_id + '_{:0>2d}'
@@ -235,7 +245,7 @@ class VOCTools(object):
                                min_side,
                                max_side,
                                cover_thresh=0.2,
-                               iou_thresh=1.0):
+                               iou_thresh=0.7):
         """Split an image and it's annotation file.
 
         Arguments:
@@ -258,7 +268,7 @@ class VOCTools(object):
         subimages = image.crop_image(split_bboxes)
 
         xml_info = PascalXml().load(xml_path)
-        subannotations = xml_info.crop_annotations(split_bboxes)
+        subannotations = xml_info.crop_annotations(split_bboxes, iou_thresh=iou_thresh)
 
         return subimages, subannotations
 

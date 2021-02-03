@@ -74,7 +74,7 @@ class ImageWrapper(object):
         self.data = mask_image
         self.height = new_height
         self.width = new_width
-        return rate
+        return rate, (vertical_bias, horizion_bias)
 
     def save(self, save_path):
         """save image data to a file.
