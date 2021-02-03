@@ -27,6 +27,7 @@ class ImageWrapper(object):
         Arguments:
             image_path: image file path.
         """
+        assert os.path.exists(image_path), image_path
         self.data = cv2.imread(image_path)
         self.path = image_path
         self.height = self.data.shape[0]
