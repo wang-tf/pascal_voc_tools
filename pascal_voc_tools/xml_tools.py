@@ -285,7 +285,7 @@ class PascalXml(object):
         new_height = int(original_height * rate)
 
         # bias
-        vertical_bias, horizon_bias = biases
+        vertical_bias, horizion_bias = biases
 
         self.size.width = new_width
         self.size.height = new_height
