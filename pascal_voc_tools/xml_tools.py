@@ -36,7 +36,7 @@ class DataSource(object):
     Attributes:
         database: a str of dataset name.
     """
-    def __init__(self, database: str = ''):
+    def __init__(self, database: str = 'Unknown'):
         self.database = database
 
     def __str__(self):
@@ -85,7 +85,7 @@ class Bndbox(object):
         h = h * dh
         return (x, y, w, h)
 
-    def resize(self, rate, horizion_bias=0, vertical_bias=0):
+    def resize(self, rate: float, horizion_bias=0, vertical_bias=0):
         """resize a bbox
 
         Args:
@@ -95,10 +95,12 @@ class Bndbox(object):
         Returns:
             new bbox list
         """
-        self.xmin = self.xmin * rate + horizion_bias
-        self.ymin = self.ymin * rate + vertical_bias
-        self.xmax = self.xmax * rate + horizion_bias
-        self.ymax = self.ymax * rate + vertical_bias
+        rate = float(rate)
+
+        self.xmin = int(self.xmin * rate) + horizion_bias
+        self.ymin = int(self.ymin * rate) + vertical_bias
+        self.xmax = int(self.xmax * rate) + horizion_bias
+        self.ymax = int(self.ymax * rate) + vertical_bias
         return self
 
 
@@ -271,7 +273,7 @@ class PascalXml(object):
         self.object.append(obj)
         return self
 
-    def resize_obj_by_rate(self, rate: float):
+    def resize_obj_by_rate(self, rate: float, biases: tuple):
         """Resize all bndbox by rate.
 
         Arguments:
@@ -282,8 +284,8 @@ class PascalXml(object):
         new_width = int(original_width * rate)
         new_height = int(original_height * rate)
 
-        horizion_bias = 0
-        vertical_bias = 0
+        # bias
+        vertical_bias, horizion_bias = biases
 
         self.size.width = new_width
         self.size.height = new_height
@@ -302,15 +304,17 @@ class PascalXml(object):
             subannotations: list, like [xml_info, ]
         """
         subannotations = []
-        for bbox in split_bboxes:
-            xmin, ymin, xmax, ymax = bbox
+        for image_bbox in split_bboxes:
+            img_xmin, img_ymin, img_xmax, img_ymax = image_bbox
 
             # init sub xml info
             sub_xml = PascalXml()
             sub_xml.folder = self.folder
             sub_xml.path = self.path
             sub_xml.filename = self.filename
-            sub_xml.size = ImageSize(xmax - xmin, ymax - ymin, self.size.depth)
+            sub_xml.size = ImageSize(width=img_xmax - img_xmin,
+                                     height=img_ymax - img_ymin,
+                                     depth=self.size.depth)
             sub_xml.source = DataSource(self.source.database)
             sub_xml.segmented = self.segmented
             sub_xml.object = []
@@ -320,12 +324,17 @@ class PascalXml(object):
                 ob_xmax = bbox.bndbox.xmax
                 ob_ymax = bbox.bndbox.ymax
 
+                input_xmin = min(img_xmax, max(ob_xmin, img_xmin))
+                input_ymin = min(img_ymax, max(ob_ymin, img_ymin))
+                input_xmax = max(img_xmin, min(ob_xmax, img_xmax))
+                input_ymax = max(img_ymin, min(ob_ymax, img_ymax))
                 if iou([ob_xmin, ob_ymin, ob_xmax, ob_ymax],
-                       [xmin, ymin, xmax, ymax]) > iou_thresh:
-                    sub_bbox = Bndbox(max(ob_xmin - xmin, 1),
-                                      max(ob_ymin - ymin, 1),
-                                      min(ob_xmax - xmax, xmax - xmin - 1),
-                                      min(ob_ymax - ymax, ymax - ymin - 1))
+                       [input_xmin, input_ymin, input_xmax, input_ymax
+                        ]) > iou_thresh:
+                    sub_bbox = Bndbox(input_xmin - img_xmin,
+                                      input_ymin - img_ymin,
+                                      input_xmax - img_xmin,
+                                      input_ymax - img_ymin)
                     sub_obj = XmlObject(name=bbox.name,
                                         bndbox=sub_bbox,
                                         truncated=bbox.truncated,
@@ -337,8 +346,7 @@ class PascalXml(object):
 
 
 def load_pascal_xml(
-                    xml_file_path: str,
-                    default_format=PascalXml()) -> PascalXml:
+    xml_file_path: str, default_format=PascalXml()) -> PascalXml:
     """Load a pascal format xml file.
     Arguments:
         xml_file_path: a xml file path.

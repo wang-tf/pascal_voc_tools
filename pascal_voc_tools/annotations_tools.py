@@ -42,7 +42,7 @@ class Annotations():
     def load(self, name_list=None):
         if name_list is None:
             self.ann_list = sorted(
-                glob.glob(os.path.join(self.ann_dir, '*.xml')))
+                glob.glob(os.path.join(self.dir, '*.xml')))
         else:
             self.ann_list = [
                 os.path.join(self.dir, '{}.xml'.format(name))
