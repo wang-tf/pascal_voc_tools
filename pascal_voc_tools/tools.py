@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def bb_intersection_over_union(boxA, boxB):
     """calculate intersection over union between two boundboxes.
@@ -28,8 +32,11 @@ def bb_intersection_over_union(boxA, boxB):
     # compute the intersection over union by taking the intersection
     # area and dividing it by the sum of prediction + ground-truth
     # areas - the interesection area
-    iou = interArea / float(boxAArea + boxBArea - interArea)
-
+    try:
+        iou = interArea / float(boxAArea + boxBArea - interArea)
+    except ZeroDivisionError as err:
+        logger.exception(err)
+        print(boxA, boxB)
     # return the intersection over union value
     return iou
 

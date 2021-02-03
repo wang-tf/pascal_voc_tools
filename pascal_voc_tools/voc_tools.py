@@ -177,13 +177,13 @@ class VOCTools(object):
                     [start_x, start_y, start_x + x_stride, start_y + y_stride])
                 start_x += int(x_stride * (1 - cover_thresh))
             bboxes.append(
-                [width - x_stride, start_y, width, start_y + y_stride])
+                [max(0, width - x_stride), start_y, width, min(height, start_y + y_stride)])
 
         start_y = 0
         while start_y + y_stride < height:
             add_row_crop(start_y)
             start_y += int(y_stride * (1 - cover_thresh))
-        add_row_crop(height - y_stride)
+        add_row_crop(max(0, height - y_stride))
         return bboxes
 
     def crop_data(self,
@@ -216,7 +216,7 @@ class VOCTools(object):
             logger.info(f'Start crop from {set_name} set')
             new_voc.main.name_list_map[set_name] = []
 
-            for name_id in name_list:
+            for name_id in tqdm.tqdm(name_list):
                 xml_path = os.path.join(self.annotations.dir, name_id + '.xml')
                 jpg_path = os.path.join(self.jpegimages.dir, name_id + '.jpg')
 
@@ -225,7 +225,7 @@ class VOCTools(object):
                     cover_thresh=cover_thresh, iou_thresh=iou_thresh)
                 for i, (image,
                         xml_writer) in enumerate(zip(images, xml_writers)):
-                    new_name_id = name_id + '_{:0>2d}'
+                    new_name_id = name_id + '_{:0>2d}'.format(i)
                     new_voc.main.name_list_map[set_name].append(new_name_id)
                     save_xml_path = os.path.join(new_voc.annotations.dir,
                                                  new_name_id + '.xml')

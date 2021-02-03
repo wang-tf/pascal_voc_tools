@@ -322,16 +322,16 @@ class PascalXml(object):
                 ob_xmax = bbox.bndbox.xmax
                 ob_ymax = bbox.bndbox.ymax
 
-                input_xmin = max(ob_xmin, img_xmin)
-                input_ymin = max(ob_ymin, img_ymin)
-                input_xmax = min(ob_xmax, img_xmax)
-                input_ymax = min(ob_ymax, img_ymax)
+                input_xmin = min(img_xmax, max(ob_xmin, img_xmin))
+                input_ymin = min(img_ymax, max(ob_ymin, img_ymin))
+                input_xmax = max(img_xmin, min(ob_xmax, img_xmax))
+                input_ymax = max(img_ymin, min(ob_ymax, img_ymax))
                 if iou([ob_xmin, ob_ymin, ob_xmax, ob_ymax],
                        [input_xmin, input_ymin, input_xmax, input_ymax]) > iou_thresh:
-                    sub_bbox = Bndbox(max(ob_xmin - xmin, 1),
-                                      max(ob_ymin - ymin, 1),
-                                      min(ob_xmax - xmax, xmax - xmin - 1),
-                                      min(ob_ymax - ymax, ymax - ymin - 1))
+                    sub_bbox = Bndbox(input_xmin - img_xmin,
+                                      input_ymin - img_ymin,
+                                      input_xmax - img_xmin,
+                                      input_ymax - img_ymin)
                     sub_obj = XmlObject(name=bbox.name,
                                         bndbox=sub_bbox,
                                         truncated=bbox.truncated,
