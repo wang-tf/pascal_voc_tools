@@ -395,8 +395,8 @@ def load_pascal_xml(xml_file_path: str, default_format=None) -> PascalXml:
     for obj in ann.xpath('./object'):
         name = get_first_node_info(obj, 'name')
         pose = get_first_node_info(obj, 'pose')
-        truncated = get_first_node_info(obj, 'truncated')
-        difficult = get_first_node_info(obj, 'difficult')
+        truncated = get_first_node_info(obj, 'truncated', 0)
+        difficult = get_first_node_info(obj, 'difficult', 0)
         xmin = get_first_node_info(obj, 'bndbox/xmin', 0)
         ymin = get_first_node_info(obj, 'bndbox/ymin', 0)
         xmax = get_first_node_info(obj, 'bndbox/xmax', 0)
@@ -405,8 +405,8 @@ def load_pascal_xml(xml_file_path: str, default_format=None) -> PascalXml:
         bndbox = Bndbox(int(xmin), int(ymin), int(xmax), int(ymax))
         xml_obj = XmlObject(name=name,
                             pose=pose,
-                            truncated=truncated,
-                            difficult=difficult,
+                            truncated=int(truncated),
+                            difficult=int(difficult),
                             bndbox=bndbox)
         default_format.object.append(xml_obj)
 
