@@ -312,7 +312,9 @@ class PascalXml(object):
             sub_xml.folder = self.folder
             sub_xml.path = self.path
             sub_xml.filename = self.filename
-            sub_xml.size = ImageSize(width=img_xmax - img_xmin, height=img_ymax - img_ymin, depth=self.size.depth)
+            sub_xml.size = ImageSize(width=img_xmax - img_xmin,
+                                     height=img_ymax - img_ymin,
+                                     depth=self.size.depth)
             sub_xml.source = DataSource(self.source.database)
             sub_xml.segmented = self.segmented
             sub_xml.object = []
@@ -327,7 +329,8 @@ class PascalXml(object):
                 input_xmax = max(img_xmin, min(ob_xmax, img_xmax))
                 input_ymax = max(img_ymin, min(ob_ymax, img_ymax))
                 if iou([ob_xmin, ob_ymin, ob_xmax, ob_ymax],
-                       [input_xmin, input_ymin, input_xmax, input_ymax]) > iou_thresh:
+                       [input_xmin, input_ymin, input_xmax, input_ymax
+                        ]) > iou_thresh:
                     sub_bbox = Bndbox(input_xmin - img_xmin,
                                       input_ymin - img_ymin,
                                       input_xmax - img_xmin,
@@ -343,8 +346,7 @@ class PascalXml(object):
 
 
 def load_pascal_xml(
-                    xml_file_path: str,
-                    default_format=PascalXml()) -> PascalXml:
+    xml_file_path: str, default_format=PascalXml()) -> PascalXml:
     """Load a pascal format xml file.
     Arguments:
         xml_file_path: a xml file path.

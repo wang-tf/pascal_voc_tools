@@ -10,7 +10,7 @@ class TestPascalXml(unittest.TestCase):
     def tearDown(self):
         if os.path.exists(self.save_path):
             os.remove(self.save_path)
-        
+
     def test_init(self):
         folder = './tests'
         filename = 'test.xml'
@@ -27,9 +27,9 @@ class TestPascalXml(unittest.TestCase):
         self.assertEqual(xml.segmented, segmented)
 
     def test_save(self):
-        
+
         save_data = "<annotation><folder></folder><filename></filename>" + \
-            "<path></path><source><database></database></source>" + \
+            "<path></path><source><database>Unknown</database></source>" + \
             "<size><width>0</width><height>0</height><depth>0</depth></size></annotation>"
         voc = PascalXml()
         voc.save(self.save_path)

@@ -107,7 +107,8 @@ class VOCTools(object):
             image.save(save_image_path)
 
             # resize annotation and save
-            xml_data = PascalXml().load(xml_path).resize_obj_by_rate(rate, biases)
+            xml_data = PascalXml().load(xml_path).resize_obj_by_rate(
+                rate, biases)
             # rewrite info
             xml_data.foler = save_voc.jpegimages.dir
             xml_data.filename = image_name
@@ -176,8 +177,10 @@ class VOCTools(object):
                 bboxes.append(
                     [start_x, start_y, start_x + x_stride, start_y + y_stride])
                 start_x += int(x_stride * (1 - cover_thresh))
-            bboxes.append(
-                [max(0, width - x_stride), start_y, width, min(height, start_y + y_stride)])
+            bboxes.append([
+                max(0, width - x_stride), start_y, width,
+                min(height, start_y + y_stride)
+            ])
 
         start_y = 0
         while start_y + y_stride < height:
@@ -200,6 +203,8 @@ class VOCTools(object):
             set_name_list: a list like [train, val].
             min_side: a int of sub image min side.
             max_side: a int of sub image max side.
+            cover_thresh: sub image overlap rate.
+            iou_thresh: bndbox with sub image overlap rate.
 
         Returns:
             a new VOCTools including new data.
@@ -221,8 +226,12 @@ class VOCTools(object):
                 jpg_path = os.path.join(self.jpegimages.dir, name_id + '.jpg')
 
                 images, xml_writers = self.crop_image_annotations(
-                    jpg_path, xml_path, min_side, max_side,
-                    cover_thresh=cover_thresh, iou_thresh=iou_thresh)
+                    jpg_path,
+                    xml_path,
+                    min_side,
+                    max_side,
+                    cover_thresh=cover_thresh,
+                    iou_thresh=iou_thresh)
                 for i, (image,
                         xml_writer) in enumerate(zip(images, xml_writers)):
                     new_name_id = name_id + '_{:0>2d}'.format(i)
@@ -268,7 +277,8 @@ class VOCTools(object):
         subimages = image.crop_image(split_bboxes)
 
         xml_info = PascalXml().load(xml_path)
-        subannotations = xml_info.crop_annotations(split_bboxes, iou_thresh=iou_thresh)
+        subannotations = xml_info.crop_annotations(split_bboxes,
+                                                   iou_thresh=iou_thresh)
 
         return subimages, subannotations
 
