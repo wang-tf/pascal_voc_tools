@@ -27,6 +27,7 @@ class ImageWrapper(object):
         Arguments:
             image_path: image file path.
         """
+        assert os.path.exists(image_path), image_path
         self.data = cv2.imread(image_path)
         self.path = image_path
         self.height = self.data.shape[0]
@@ -74,7 +75,7 @@ class ImageWrapper(object):
         self.data = mask_image
         self.height = new_height
         self.width = new_width
-        return rate
+        return rate, (vertical_bias, horizion_bias)
 
     def save(self, save_path):
         """save image data to a file.
@@ -96,7 +97,7 @@ class ImageWrapper(object):
         """
         subimages = []
         for bbox in split_bboxes:
-            sub_image = Image()
+            sub_image = ImageWrapper()
             sub_image.data = self.data[bbox[1]:bbox[3], bbox[0]:bbox[2]]
             sub_image.width = bbox[2] - bbox[0]
             sub_image.height = bbox[3] - bbox[1]
