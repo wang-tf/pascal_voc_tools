@@ -3,6 +3,7 @@
 decode xml file of Pascal Voc annotation write a xml file
 about pascal voc annotation.
 """
+import os
 import logging
 
 from lxml import etree
@@ -11,6 +12,20 @@ from lxml.etree import SubElement
 from .tools import bb_intersection_over_union as iou
 
 logger = logging.getLogger(__name__)
+
+
+def get_first_node_info(node, key, default=''):
+    val = node.xpath(f'./{key}/text()')
+    if val:
+        return val[0]
+    else:
+        return default
+
+
+def set_sub_node_info(node, key, val):
+    sub_node = SubElement(node, key)
+    sub_node.text = str(val)
+    return node
 
 
 class ImageSize(object):
@@ -29,6 +44,22 @@ class ImageSize(object):
     def __str__(self):
         return f"ImageSize({self.width}, {self.height}, {self.depth})"
 
+    def load_from_node(self, node):
+        """
+        """
+        self.width = int(get_first_node_info(node, 'width', 0))
+        self.height = int(get_first_node_info(node, 'height', 0))
+        self.depth = int(get_first_node_info(node, 'depth', 0))
+        return self
+
+    def save_to_node(self, node):
+        """
+        """
+        set_sub_node_info(node, 'width', self.width)
+        set_sub_node_info(node, 'height', self.height)
+        set_sub_node_info(node, 'depth', self.depth)
+        return self
+
 
 class DataSource(object):
     """Source data format in Pascal VOC xml
@@ -41,6 +72,18 @@ class DataSource(object):
 
     def __str__(self):
         return f"DataScorce({self.database})"
+
+    def load_from_node(self, node):
+        """
+        """
+        self.database = get_first_node_info(node, 'database', 'Unknown')
+        return self
+
+    def save_to_node(self, node):
+        """
+        """
+        set_sub_node_info(node, 'database', self.database)
+        return self
 
 
 class Bndbox(object):
@@ -64,6 +107,30 @@ class Bndbox(object):
 
     def __str__(self):
         return f"Bndbox({self.xmin}, {self.ymin}, {self.xmax}, {self.ymax})"
+
+    def load_from_node(self, node):
+        """decode bndbox node info
+
+        Arguments:
+            node: a bndbox node in xml.
+        """
+        self.xmin = int(get_first_node_info(node, 'xmin', 0))
+        self.ymin = int(get_first_node_info(node, 'ymin', 0))
+        self.xmax = int(get_first_node_info(node, 'xmax', 0))
+        self.ymax = int(get_first_node_info(node, 'ymax', 0))
+        return self
+
+    def save_to_node(self, node):
+        """encode xmin, ymin, xmax, ymax to bndbox node.
+
+        Arguments:
+            node: a bndbox SubElement node.
+        """
+        set_sub_node_info(node, 'xmin', self.xmin)
+        set_sub_node_info(node, 'ymin', self.ymin)
+        set_sub_node_info(node, 'xmax', self.xmax)
+        set_sub_node_info(node, 'ymax', self.ymax)
+        return self
 
     def convert2relative_xywh(self, size):
         """from absolute coordinate to relative coordinate
@@ -130,6 +197,30 @@ class XmlObject(object):
         return f"XmlObject({self.name}, {self.pose}," + \
             f" {self.truncated}, {self.difficult}, {self.bndbox})"
 
+    def load_from_node(self, node):
+        """
+        """
+        self.name = get_first_node_info(node, 'name', '')
+        self.pose = get_first_node_info(node, 'pose', 'Unspecified')
+        self.truncated = int(get_first_node_info(node, 'truncated', 0))
+        self.difficult = int(get_first_node_info(node, 'difficult', 0))
+        node_bndbox = node.xpath('./bndbox')
+        if node_bndbox:
+            self.bndbox = Bndbox().load_from_node(node_bndbox[0])
+        return self
+
+    def save_to_node(self, node):
+        """
+        """
+        set_sub_node_info(node, 'name', self.name)
+        set_sub_node_info(node, 'pose', self.pose)
+        set_sub_node_info(node, 'truncated', self.truncated)
+        set_sub_node_info(node, 'difficult', self.difficult)
+
+        node_bndbox = SubElement(node, 'bndbox')
+        self.bndbox.save_to_node(node_bndbox)
+        return self
+
 
 class PascalXml(object):
     """Pascal VOC xml file data format
@@ -153,7 +244,7 @@ class PascalXml(object):
                  object_list: list = []):
         self.folder = folder
         self.filename = filename
-        self.path = path
+        self.path = path if path else os.path.join(folder, filename)
         self.source = source
         self.size = size
         self.segmented = segmented
@@ -165,7 +256,41 @@ class PascalXml(object):
         Arguments:
             xml_file_path: a xml file path.
         """
-        load_pascal_xml(xml_file_path, self)
+        # load_pascal_xml(xml_file_path, self)
+        html = etree.parse(xml_file_path)
+        annotation = html.xpath('/annotation')  # load first annotation
+        if not annotation:
+            logger.error("Can not find annotation node")
+            raise KeyError("Can not find annotation node")
+
+        self.load_from_node(annotation[0])
+
+        return self
+
+    def load_from_node(self, node):
+        """load data from Element
+
+        Arguments:
+            node: an annotation Element.
+        """
+        self.folder = get_first_node_info(node, 'folder', './')
+        self.filename = get_first_node_info(node, 'filename', '')
+        self.path = get_first_node_info(
+            node, 'path', os.path.join(self.folder, self.filename))
+
+        node_source = node.xpath('./source')
+        if node_source:
+            self.source = DataSource().load_from_node(node_source[0])
+
+        node_size = node.xpath('./size')
+        if node_size:
+            self.size = ImageSize().load_from_node(node_size[0])
+        self.segmented = int(get_first_node_info(node, 'segmented', 0))
+
+        self.object = []
+        for obj in node.xpath('./object'):
+            xml_obj = XmlObject().load_from_node(obj)
+            self.object.append(xml_obj)
         return self
 
     def save(self, save_xml_path):
@@ -174,7 +299,37 @@ class PascalXml(object):
         Arguments:
            save_xml_path: the xml path to save data.
         """
-        save_pascal_xml(save_xml_path, self)
+        # save_pascal_xml(save_xml_path, self)
+        node_root = etree.Element('annotation')
+        self.save_to_node(node_root)
+        tree = etree.ElementTree(node_root)
+        tree.write(save_xml_path,
+                   pretty_print=True,
+                   xml_declaration=False,
+                   encoding='utf-8')
+        return self
+
+    def save_to_node(self, node):
+        """save info to annotation Element
+
+        Arguments:
+            node: an annotation Element.
+        """
+        set_sub_node_info(node, 'folder', self.folder)
+        set_sub_node_info(node, 'filename', self.filename)
+        set_sub_node_info(node, 'path', self.path)
+
+        node_source = SubElement(node, 'source')
+        self.source.save_to_node(node_source)
+
+        set_sub_node_info(node, 'segmented', self.segmented)
+
+        node_size = SubElement(node, 'size')
+        self.size.save_to_node(node_size)
+
+        for obj in self.object:
+            node_object = SubElement(node, 'object')
+            obj.save_to_node(node_object)
         return self
 
     def replace_name(self, old_name, new_name):
@@ -345,8 +500,7 @@ class PascalXml(object):
         return subannotations
 
 
-def load_pascal_xml(
-    xml_file_path: str, default_format=PascalXml()) -> PascalXml:
+def load_pascal_xml(xml_file_path: str, default_format=None) -> PascalXml:
     """Load a pascal format xml file.
     Arguments:
         xml_file_path: a xml file path.
@@ -356,47 +510,51 @@ def load_pascal_xml(
     Raises:
         ListError: can not find the key in xml file.
     """
+    if not default_format:
+        default_format = PascalXml()
+
     html = etree.parse(xml_file_path)
-    annotation = html.xpath('/annotation')[0]  # load first annotation
+    annotation = html.xpath('/annotation')  # load first annotation
+    if not annotation:
+        logger.error("Can not find annotation node")
+        raise KeyError("Can not find annotation node")
 
-    default_format.folder = annotation.xpath('./folder/text()')[0]
-    default_format.filename = annotation.xpath('./filename/text()')[0]
-    try:
-        default_format.path = annotation.xpath('./path/text()')[0]
-    except Exception:
-        logger.warning('Can not find path node in xml.')
-        pass
-    try:
-        default_format.source = DataSource()
-        default_format.source.database = annotation.xpath(
-            './source/database/text()')[0]
-    except Exception:
-        logger.warning('Can not find source/database node in xml.')
-        pass
+    # for xml only one annotation node
+    for ann in annotation:
+        folder = get_first_node_info(ann, 'folder', './')
+        filename = get_first_node_info(ann, 'filename', '')
+        path = get_first_node_info(ann, 'path', os.path.join(folder, filename))
+        database = get_first_node_info(ann, 'source/database', 'Unknown')
+        width = get_first_node_info(ann, 'size/width', 0)
+        height = get_first_node_info(ann, 'size/height', 0)
+        depth = get_first_node_info(ann, 'size/depth', 0)
+        segmented = get_first_node_info(ann, 'segmented', 0)
 
-    default_format.size = ImageSize()
-    default_format.size.width = int(annotation.xpath('./size/width/text()')[0])
-    default_format.size.height = int(
-        annotation.xpath('./size/height/text()')[0])
-    default_format.size.depth = int(annotation.xpath('./size/depth/text()')[0])
-    default_format.segmented = int(annotation.xpath('./segmented/text()')[0])
+    default_format.folder = folder
+    default_format.filename = filename
+    default_format.path = path
+    default_format.source = DataSource()
+    default_format.source.database = database
+    default_format.size = ImageSize(int(width), int(height), int(depth))
+    default_format.segmented = int(segmented)
 
     default_format.object = []
-    for obj in annotation.xpath('./object'):
-        xml_obj = XmlObject()
-        xml_obj.name = obj.xpath('./name/text()')[0]
-        try:
-            xml_obj.pose = obj.xpath('./pose/text()')[0]
-        except Exception:
-            logger.warning("Can not find pose node in xml")
-            pass
-        xml_obj.truncated = int(obj.xpath('./truncated/text()')[0])
-        xml_obj.difficult = int(obj.xpath('./difficult/text()')[0])
-        xml_obj.bndbox = Bndbox()
-        xml_obj.bndbox.xmin = int(obj.xpath('./bndbox/xmin/text()')[0])
-        xml_obj.bndbox.ymin = int(obj.xpath('./bndbox/ymin/text()')[0])
-        xml_obj.bndbox.xmax = int(obj.xpath('./bndbox/xmax/text()')[0])
-        xml_obj.bndbox.ymax = int(obj.xpath('./bndbox/ymax/text()')[0])
+    for obj in ann.xpath('./object'):
+        name = get_first_node_info(obj, 'name')
+        pose = get_first_node_info(obj, 'pose')
+        truncated = get_first_node_info(obj, 'truncated', 0)
+        difficult = get_first_node_info(obj, 'difficult', 0)
+        xmin = get_first_node_info(obj, 'bndbox/xmin', 0)
+        ymin = get_first_node_info(obj, 'bndbox/ymin', 0)
+        xmax = get_first_node_info(obj, 'bndbox/xmax', 0)
+        ymax = get_first_node_info(obj, 'bndbox/ymax', 0)
+
+        bndbox = Bndbox(int(xmin), int(ymin), int(xmax), int(ymax))
+        xml_obj = XmlObject(name=name,
+                            pose=pose,
+                            truncated=int(truncated),
+                            difficult=int(difficult),
+                            bndbox=bndbox)
         default_format.object.append(xml_obj)
 
     return default_format
@@ -412,42 +570,33 @@ def save_pascal_xml(save_xml_path: str, pascal_xml: PascalXml) -> PascalXml:
     """
     node_root = etree.Element('annotation')
 
-    node_folder = SubElement(node_root, 'folder')
-    node_folder.text = pascal_xml.folder
-
-    node_filename = SubElement(node_root, 'filename')
-    node_filename.text = pascal_xml.filename
-
-    node_path = SubElement(node_root, 'path')
-    node_path.text = pascal_xml.path
+    set_sub_node_info(node_root, 'folder', pascal_xml.folder)
+    set_sub_node_info(node_root, 'filename', pascal_xml.filename)
+    set_sub_node_info(node_root, 'path', pascal_xml.path)
 
     node_source = SubElement(node_root, 'source')
-    node_database = SubElement(node_source, 'database')
-    node_database.text = pascal_xml.source.database
+    set_sub_node_info(node_source, 'database', pascal_xml.source.database)
+
+    set_sub_node_info(node_root, 'segmented', pascal_xml.segmented)
 
     node_size = SubElement(node_root, 'size')
-    node_width = SubElement(node_size, 'width')
-    node_width.text = str(pascal_xml.size.width)
-    node_height = SubElement(node_size, 'height')
-    node_height.text = str(pascal_xml.size.height)
-    node_depth = SubElement(node_size, 'depth')
-    node_depth.text = str(pascal_xml.size.depth)
+    set_sub_node_info(node_size, 'width', pascal_xml.size.width)
+    set_sub_node_info(node_size, 'height', pascal_xml.size.height)
+    set_sub_node_info(node_size, 'depth', pascal_xml.size.depth)
 
     for obj in pascal_xml.object:
         node_object = SubElement(node_root, 'object')
-        node_name = SubElement(node_object, 'name')
-        node_name.text = obj.name
-        node_difficult = SubElement(node_object, 'difficult')
-        node_difficult.text = str(obj.difficult)
+        set_sub_node_info(node_object, 'name', obj.name)
+        set_sub_node_info(node_object, 'truncated', obj.truncated)
+        set_sub_node_info(node_object, 'difficult', obj.difficult)
+        set_sub_node_info(node_object, 'name', obj.name)
+        set_sub_node_info(node_object, 'name', obj.name)
+
         node_bndbox = SubElement(node_object, 'bndbox')
-        node_xmin = SubElement(node_bndbox, 'xmin')
-        node_xmin.text = str(obj.bndbox.xmin)
-        node_ymin = SubElement(node_bndbox, 'ymin')
-        node_ymin.text = str(obj.bndbox.ymin)
-        node_xmax = SubElement(node_bndbox, 'xmax')
-        node_xmax.text = str(obj.bndbox.xmax)
-        node_ymax = SubElement(node_bndbox, 'ymax')
-        node_ymax.text = str(obj.bndbox.ymax)
+        set_sub_node_info(node_bndbox, 'xmin', obj.bndbox.xmin)
+        set_sub_node_info(node_bndbox, 'ymin', obj.bndbox.ymin)
+        set_sub_node_info(node_bndbox, 'xmax', obj.bndbox.xmax)
+        set_sub_node_info(node_bndbox, 'ymax', obj.bndbox.ymax)
 
     tree = etree.ElementTree(node_root)
     tree.write(save_xml_path,

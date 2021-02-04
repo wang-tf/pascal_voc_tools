@@ -59,6 +59,9 @@ class VOCTools(object):
         self.jpegimages = JPEGImages(os.path.join(self.root_dir, 'JPEGImages'))
         self.main = Main(os.path.join(self.root_dir, 'ImageSets/Main'))
 
+    def __str__(self):
+        return f"VOCTools(voc_root_dir={self.root_dir})"
+
     def get_year(self):
         year = None
         sub_dir = os.path.basename(self.root_dir.rstrip('/'))

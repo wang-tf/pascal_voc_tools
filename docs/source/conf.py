@@ -22,7 +22,7 @@ copyright = '2019, ternence_wang'
 author = 'ternence_wang'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.0'
+release = '0.2.0'
 
 # fix can not find contents.rst error
 master_doc = 'index'
