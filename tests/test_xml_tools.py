@@ -30,7 +30,8 @@ class TestPascalXml(unittest.TestCase):
 
         save_data = "<annotation><folder></folder><filename></filename>" + \
             "<path></path><source><database>Unknown</database></source>" + \
-            "<size><width>0</width><height>0</height><depth>0</depth></size></annotation>"
+            "<segmented>0</segmented><size><width>0</width>" + \
+            "<height>0</height><depth>0</depth></size></annotation>"
         voc = PascalXml()
         voc.save(self.save_path)
 
