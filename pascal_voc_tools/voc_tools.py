@@ -52,9 +52,9 @@ class Main(object):
 class VOCTools(object):
   """a VOC format dataset.
 
-    Attributes:
-        root_dir: a voc directory like VOC2007.
-    """
+  Attributes:
+    root_dir: a voc directory like VOC2007.
+  """
   def __init__(self, voc_root_dir: str):
     self.root_dir = voc_root_dir
     self.year = self.get_year()
@@ -88,14 +88,14 @@ class VOCTools(object):
   def resize_by_size(self, width, height, save_root_dir):
     """Resize whole dataset by set a fix image size.
 
-        Args:
-            width: int, new image width.
-            height: int, new image height.
-            save_root_dir: a new dir to save data.
+    Args:
+      width: int, new image width.
+      height: int, new image height.
+      save_root_dir: a new dir to save data.
 
-        Returns:
-            new VOCTools have new data.
-        """
+    Returns:
+      new VOCTools have new data.
+    """
     self.annotations.load()
     save_voc = VOCTools(save_root_dir)
     save_voc.gen_format_dir()
@@ -129,12 +129,12 @@ class VOCTools(object):
   def get_image_path_by_xml_path(self, xml_path):
     """using xml path to inference image path
 
-        Args:
-            xml_path: str, xml file path.
+    Args:
+      xml_path: str, xml file path.
 
-        Returns:
-            image path in current dataset.
-        """
+    Returns:
+      image path in current dataset.
+    """
     xml_name = os.path.basename(xml_path)
     image_path = os.path.join(self.jpegimages.dir,
                               xml_name.replace('.xml', '.jpg'))
@@ -204,17 +204,17 @@ class VOCTools(object):
                 iou_thresh=0.7):
     """split image and annotation to some sub data.
 
-        Arguments:
-            save_root_dir: a new dir to save new data.
-            set_name_list: a list like [train, val].
-            min_side: a int of sub image min side.
-            max_side: a int of sub image max side.
-            cover_thresh: sub image overlap rate.
-            iou_thresh: bndbox with sub image overlap rate.
+    Arguments:
+      save_root_dir: a new dir to save new data.
+      set_name_list: a list like [train, val].
+      min_side: a int of sub image min side.
+      max_side: a int of sub image max side.
+      cover_thresh: sub image overlap rate.
+      iou_thresh: bndbox with sub image overlap rate.
 
-        Returns:
-            a new VOCTools including new data.
-        """
+    Returns:
+      a new VOCTools including new data.
+    """
     new_voc = VOCTools(save_root_dir)
     new_voc.gen_format_dir()
 
@@ -262,17 +262,17 @@ class VOCTools(object):
                              iou_thresh=0.7):
     """Split an image and it's annotation file.
 
-        Arguments:
-            jpg_path: str, image path.
-            xml_path: str, xml path.
-            cover_thresh: float, cover rate about each subimage, default=0.2.
-            iou_thresh: float, filter annotations which one's iou is smaller
-                than thresh, default=1.0.
+    Arguments:
+      jpg_path: str, image path.
+      xml_path: str, xml path.
+      cover_thresh: float, cover rate about each subimage, default=0.2.
+      iou_thresh: float, filter annotations which one's iou is smaller
+        than thresh, default=1.0.
 
-        Returns:
-            subimages: a list of ImageWrapper.
-            subannotations: a list of PascalXml
-        """
+    Returns:
+      subimages: a list of ImageWrapper.
+      subannotations: a list of PascalXml
+    """
     image = ImageWrapper().load(jpg_path)
     split_bboxes = self.get_crop_bboxes(width=image.width,
                                         height=image.height,
@@ -289,7 +289,7 @@ class VOCTools(object):
 
   def check_jpg_xml_match(self):
     """Check matching degree about xml files and jpeg files.
-        """
+    """
     # arguemnts check
     assert os.path.exists(self.annotations.dir), self.annotations.dir
     assert os.path.exists(self.jpegimages.dir), self.jpegimages.dir
