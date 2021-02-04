@@ -127,9 +127,9 @@ class Bndbox(object):
             node: a bndbox SubElement node.
         """
         set_sub_node_info(node, 'xmin', self.xmin)
-        set_sub_node_info(node, 'ymin', self.xmin)
-        set_sub_node_info(node, 'xmax', self.xmin)
-        set_sub_node_info(node, 'ymax', self.xmin)
+        set_sub_node_info(node, 'ymin', self.ymin)
+        set_sub_node_info(node, 'xmax', self.xmax)
+        set_sub_node_info(node, 'ymax', self.ymax)
         return self
 
     def convert2relative_xywh(self, size):
@@ -204,7 +204,9 @@ class XmlObject(object):
         self.pose = get_first_node_info(node, 'pose', 'Unspecified')
         self.truncated = int(get_first_node_info(node, 'truncated', 0))
         self.difficult = int(get_first_node_info(node, 'difficult', 0))
-        self.bndbox = Bndbox().load_from_node(node.xpath('./bndbox'))
+        node_bndbox = node.xpath('./bndbox')
+        if node_bndbox:
+            self.bndbox = Bndbox().load_from_node(node_bndbox[0])
         return self
 
     def save_to_node(self, node):
@@ -276,9 +278,13 @@ class PascalXml(object):
         self.path = get_first_node_info(
             node, 'path', os.path.join(self.folder, self.filename))
 
-        self.source = DataSource().load_from_node(node.xpath('source'))
+        node_source = node.xpath('./source')
+        if node_source:
+            self.source = DataSource().load_from_node(node_source[0])
 
-        self.size = ImageSize().load_from_node(node.xpath('./size'))
+        node_size = node.xpath('./size')
+        if node_size:
+            self.size = ImageSize().load_from_node(node_size[0])
         self.segmented = int(get_first_node_info(node, 'segmented', 0))
 
         self.object = []
