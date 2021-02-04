@@ -31,11 +31,11 @@ def set_sub_node_info(node, key, val):
 class ImageSize(object):
   """Size data format in Pascal VOC xml
 
-    Attributes:
-        width: a int of image width.
-        height: a int of image height.
-        depth: a int of image depth.
-    """
+  Attributes:
+    width: a int of image width.
+    height: a int of image height.
+    depth: a int of image depth.
+  """
   def __init__(self, width: int = 0, height: int = 0, depth: int = 0):
     self.width = width
     self.height = height
@@ -48,7 +48,7 @@ class ImageSize(object):
     """Decode size info from node.
 
     Arguments:
-        node: a size Element node.
+      node: a size Element node.
     """
     self.width = int(get_first_node_info(node, 'width', 0))
     self.height = int(get_first_node_info(node, 'height', 0))
@@ -59,7 +59,7 @@ class ImageSize(object):
     """Encode size info to node.
 
     Arguments:
-        node: a size Element node.
+      node: a size Element node.
     """
     set_sub_node_info(node, 'width', self.width)
     set_sub_node_info(node, 'height', self.height)
@@ -70,9 +70,9 @@ class ImageSize(object):
 class DataSource(object):
   """Source data format in Pascal VOC xml
 
-    Attributes:
-        database: a str of dataset name.
-    """
+  Attributes:
+    database: a str of dataset name.
+  """
   def __init__(self, database: str = 'Unknown'):
     self.database = database
 
@@ -83,7 +83,7 @@ class DataSource(object):
     """Decode database info from node.
 
     Arguments:
-        node: a source Element node.
+      node: a source Element node.
     """
     self.database = get_first_node_info(node, 'database', 'Unknown')
     return self
@@ -92,7 +92,7 @@ class DataSource(object):
     """Encode database info from node.
 
     Arguments:
-        node: a source Element node.
+      node: a source Element node.
     """
     set_sub_node_info(node, 'database', self.database)
     return self
@@ -101,12 +101,12 @@ class DataSource(object):
 class Bndbox(object):
   """Bndbox data format in Object for Pascal VOC xml
 
-    Attributes:
-        xmin: a int of bndbox left.
-        ymin: a int of bndbox top.
-        xmax: a int of bndbox right.
-        ymax: a int of bndbox bottom.
-    """
+  Attributes:
+    xmin: a int of bndbox left.
+    ymin: a int of bndbox top.
+    xmax: a int of bndbox right.
+    ymax: a int of bndbox bottom.
+  """
   def __init__(self,
                xmin: int = 0,
                ymin: int = 0,
@@ -123,9 +123,9 @@ class Bndbox(object):
   def load_from_node(self, node):
     """Decode bndbox node info
 
-        Arguments:
-            node: a bndbox node in xml.
-        """
+    Arguments:
+      node: a bndbox node in xml.
+    """
     self.xmin = int(get_first_node_info(node, 'xmin', 0))
     self.ymin = int(get_first_node_info(node, 'ymin', 0))
     self.xmax = int(get_first_node_info(node, 'xmax', 0))
@@ -135,9 +135,9 @@ class Bndbox(object):
   def save_to_node(self, node):
     """Encode xmin, ymin, xmax, ymax to bndbox node.
 
-        Arguments:
-            node: a bndbox SubElement node.
-        """
+    Arguments:
+      node: a bndbox SubElement node.
+    """
     set_sub_node_info(node, 'xmin', self.xmin)
     set_sub_node_info(node, 'ymin', self.ymin)
     set_sub_node_info(node, 'xmax', self.xmax)
@@ -147,9 +147,9 @@ class Bndbox(object):
   def convert2relative_xywh(self, size):
     """from absolute coordinate to relative coordinate
 
-        Arguments:
-            size: a tuple of width and height
-        """
+    Arguments:
+      size: a tuple of width and height
+    """
     box = (float(self.xmin), float(self.xmax), float(self.ymin),
            float(self.ymax))
     dw = 1. / (size[0])
@@ -167,13 +167,13 @@ class Bndbox(object):
   def resize(self, rate: float, horizion_bias=0, vertical_bias=0):
     """resize a bbox
 
-        Args:
-            rate: box change rate;
-            horizion_bias: xmin and xmax will add it;
-            vertical_bias: ymin and ymax will add it,
-        Returns:
-            new bbox list
-        """
+    Args:
+      rate: box change rate;
+      horizion_bias: xmin and xmax will add it;
+      vertical_bias: ymin and ymax will add it,
+    Returns:
+      new bbox list
+    """
     rate = float(rate)
 
     self.xmin = int(self.xmin * rate) + horizion_bias
@@ -186,13 +186,13 @@ class Bndbox(object):
 class XmlObject(object):
   """Object data foramt in Pascal VOC xml
 
-    Attributes:
-        name: the category name.
-        pose: object post description.
-        truncated: default is 0.
-        difficult: default is 0.
-        bndbox: the Bndbox.
-    """
+  Attributes:
+    name: the category name.
+    pose: object post description.
+    truncated: default is 0.
+    difficult: default is 0.
+    bndbox: the Bndbox.
+  """
   def __init__(self,
                name: str = '',
                pose: str = 'Unspecified',
@@ -213,7 +213,7 @@ class XmlObject(object):
     """Docode xml info from node.
 
     Arguments:
-        node: a annotation Element node.
+      node: a annotation Element node.
     """
     self.name = get_first_node_info(node, 'name', '')
     self.pose = get_first_node_info(node, 'pose', 'Unspecified')
@@ -228,7 +228,7 @@ class XmlObject(object):
     """Eocode xml info from node.
 
     Arguments:
-        node: a annotation Element node.
+      node: a annotation Element node.
     """
     set_sub_node_info(node, 'name', self.name)
     set_sub_node_info(node, 'pose', self.pose)
@@ -244,14 +244,14 @@ class PascalXml(object):
   """Pascal VOC xml file data format
 
     Attributes:
-        folder: image folder.
-        filename: image file name.
-        path: image file path.
-        source: the DataSource.
-        size: the ImageSize.
-        segmented: default 0.
-        object_list: a list of XmlObject
-    """
+      folder: image folder.
+      filename: image file name.
+      path: image file path.
+      source: the DataSource.
+      size: the ImageSize.
+      segmented: default 0.
+      object_list: a list of XmlObject
+  """
   def __init__(self,
                folder: str = '',
                filename: str = '',
@@ -271,9 +271,9 @@ class PascalXml(object):
   def load(self, xml_file_path):
     """form a xml file load data.
 
-        Arguments:
-            xml_file_path: a xml file path.
-        """
+    Arguments:
+      xml_file_path: a xml file path.
+    """
     # load_pascal_xml(xml_file_path, self)
     html = etree.parse(xml_file_path)
     annotation = html.xpath('/annotation')  # load first annotation
@@ -288,9 +288,9 @@ class PascalXml(object):
   def load_from_node(self, node):
     """load data from Element
 
-        Arguments:
-            node: an annotation Element.
-        """
+    Arguments:
+      node: an annotation Element.
+    """
     self.folder = get_first_node_info(node, 'folder', './')
     self.filename = get_first_node_info(node, 'filename', '')
     self.path = get_first_node_info(node, 'path',
@@ -314,9 +314,9 @@ class PascalXml(object):
   def save(self, save_xml_path):
     """save data to a xml file.
 
-        Arguments:
-           save_xml_path: the xml path to save data.
-        """
+    Arguments:
+      save_xml_path: the xml path to save data.
+    """
     # save_pascal_xml(save_xml_path, self)
     node_root = etree.Element('annotation')
     self.save_to_node(node_root)
@@ -330,9 +330,9 @@ class PascalXml(object):
   def save_to_node(self, node):
     """save info to annotation Element
 
-        Arguments:
-            node: an annotation Element.
-        """
+    Arguments:
+      node: an annotation Element.
+    """
     set_sub_node_info(node, 'folder', self.folder)
     set_sub_node_info(node, 'filename', self.filename)
     set_sub_node_info(node, 'path', self.path)
@@ -353,10 +353,10 @@ class PascalXml(object):
   def replace_name(self, old_name, new_name):
     """Replace an object name.
 
-        Args:
-            old_name: str, an object class name.
-            new_name: str, a new object class name.
-        """
+    Args:
+      old_name: str, an object class name.
+      new_name: str, a new object class name.
+    """
     for obj in self.object:
       if obj.name == old_name:
         obj.name = new_name
@@ -365,10 +365,10 @@ class PascalXml(object):
   def convert2yolotxt(self, save_path: str, classes: list):
     """save data to txt for yolo format.
 
-        Arguments:
-            save_path: the txt file path to save data.
-            classes: a list of categories.
-        """
+    Arguments:
+      save_path: the txt file path to save data.
+      classes: a list of categories.
+    """
     assert save_path[
         -4:] == '.txt', f'Please check save_path is right: {save_path}'
 
@@ -392,11 +392,11 @@ class PascalXml(object):
 
   def convert2csv(self, classes: list = []):
     """Convert data to info list. The head is
-        [file_name, width, height, category, xmin, ymin, xmax, ymax]
+    [file_name, width, height, category, xmin, ymin, xmax, ymax]
 
-        Arguments:
-            classes: a list of categories.
-        """
+    Arguments:
+      classes: a list of categories.
+    """
     file_name = self.filename
     width = self.size.width
     height = self.size.height
@@ -426,16 +426,16 @@ class PascalXml(object):
                  difficult=0):
     """add an object info
 
-        Args:
-            name: str, class name.
-            xmin: int, left.
-            ymin: int, top.
-            xmax: int, right.
-            ymax: int, bottom.
-            pose: str, default is 'Unspecified'.
-            truncated: str, default is 0.
-            difficult: int, default is 0.
-        """
+    Args:
+      name: str, class name.
+      xmin: int, left.
+      ymin: int, top.
+      xmax: int, right.
+      ymax: int, bottom.
+      pose: str, default is 'Unspecified'.
+      truncated: str, default is 0.
+      difficult: int, default is 0.
+    """
     bndbox = Bndbox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
     obj = XmlObject(name=name,
                     pose=pose,
@@ -448,9 +448,9 @@ class PascalXml(object):
   def resize_obj_by_rate(self, rate: float, biases: tuple):
     """Resize all bndbox by rate.
 
-        Arguments:
-            rate: a float for timeing bndbox.
-        """
+    Arguments:
+      rate: a float for timeing bndbox.
+    """
     original_width = int(self.size.width)
     original_height = int(self.size.height)
     new_width = int(original_width * rate)
@@ -469,12 +469,13 @@ class PascalXml(object):
 
   def crop_annotations(self, split_bboxes, iou_thresh=0.7):
     """Using split_bboxes to split an xml file.
-        Arguments:
-            xml_info: dict, all info about a xml.
-            split_bboxes: list, like [[xmin, ymin, xmax, ymax], ]
-        Returns:
-            subannotations: list, like [xml_info, ]
-        """
+
+    Arguments:
+      xml_info: dict, all info about a xml.
+      split_bboxes: list, like [[xmin, ymin, xmax, ymax], ]
+    Returns:
+      subannotations: list, like [xml_info, ]
+    """
     subannotations = []
     for image_bbox in split_bboxes:
       img_xmin, img_ymin, img_xmax, img_ymax = image_bbox
@@ -516,14 +517,17 @@ class PascalXml(object):
 
 def load_pascal_xml(xml_file_path: str, default_format=None) -> PascalXml:
   """Load a pascal format xml file.
-    Arguments:
-        xml_file_path: a xml file path.
-        default_format: PascalXml instance.
-    Returns:
-        default_format: the PascalXml instance including data.
-    Raises:
-        ListError: can not find the key in xml file.
-    """
+
+  Arguments:
+    xml_file_path: a xml file path.
+    default_format: PascalXml instance.
+
+  Returns:
+    default_format: the PascalXml instance including data.
+
+  Raises:
+    ListError: can not find the key in xml file.
+  """
   if not default_format:
     default_format = PascalXml()
 
@@ -576,12 +580,14 @@ def load_pascal_xml(xml_file_path: str, default_format=None) -> PascalXml:
 
 def save_pascal_xml(save_xml_path: str, pascal_xml: PascalXml) -> PascalXml:
   """save data to xml
-    Arguments:
-        save_xml_path: save path.
-        pascal_xml: PascalXml.
-    Returns:
-        PascalXml
-    """
+
+  Arguments:
+    save_xml_path: save path.
+    pascal_xml: PascalXml.
+
+  Returns:
+    PascalXml
+  """
   node_root = etree.Element('annotation')
 
   set_sub_node_info(node_root, 'folder', pascal_xml.folder)
