@@ -259,14 +259,18 @@ class PascalXml(object):
                source: DataSource = DataSource(),
                size: ImageSize = ImageSize(),
                segmented: int = 0,
-               object_list: list = []):
+               object_list: list = None):
     self.folder = folder
     self.filename = filename
     self.path = path if path else os.path.join(folder, filename)
     self.source = source
     self.size = size
     self.segmented = segmented
-    self.object = object_list
+    if object_list:
+      assert isinstance(object_list, list)
+      self.object = object_list
+    else:
+      self.object = []
 
   def load(self, xml_file_path):
     """form a xml file load data.
