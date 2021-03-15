@@ -1,8 +1,11 @@
 # Pascal VOC Tools
 
+[![CodeFactor](https://www.codefactor.io/repository/github/wang-tf/pascal_voc_tools/badge)](https://www.codefactor.io/repository/github/wang-tf/pascal_voc_tools)
+[![Documentation Status](https://readthedocs.org/projects/pascal-voc-tools/badge/?version=latest)](https://pascal-voc-tools.readthedocs.io/en/latest/?badge=latest)
+[![PyPI version](https://badge.fury.io/py/pascal-voc-tools.svg)](https://badge.fury.io/py/pascal-voc-tools)
+
 This package includes some tools about pascal voc format dataset like read xml, write xml, resize image.
 
-[![Documentation Status](https://readthedocs.org/projects/pascal-voc-tools/badge/?version=latest)](https://pascal-voc-tools.readthedocs.io/en/latest/?badge=latest)
 
 # Functions
 - annotations file laod, edit and save;
